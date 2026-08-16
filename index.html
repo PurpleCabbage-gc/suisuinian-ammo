@@ -208,7 +208,7 @@ textarea.f{resize:vertical;min-height:74px}
 .seg-tools{display:flex;gap:6px}
 .seg-tool{border:1px solid var(--green-line);background:var(--card);color:var(--green-deep);font-size:.66rem;border-radius:4px;padding:1px 7px;cursor:pointer;font-family:inherit}
 .seg-tool:hover{background:var(--green-soft)}
-.seg-edit{width:100%;min-height:72px;border:1px solid var(--line);border-radius:7px;padding:10px 12px;font-size:.9rem;line-height:1.9;font-family:inherit;background:var(--card);resize:vertical;color:var(--ink)}
+.seg-edit{width:100%;min-height:72px;border:1px solid var(--line);border-radius:7px;padding:10px 12px;font-size:.9rem;line-height:1.9;font-family:inherit;background:var(--card);resize:none;overflow:hidden;color:var(--ink)}
 .seg-edit:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
 .quote-bar .quote-phrase{display:block;font-size:.74rem;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:5px;padding:4px 8px;margin-top:5px;max-height:90px;overflow:auto;line-height:1.6}
 .arch{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:12px 13px;margin:8px 0;background:var(--card)}
@@ -245,6 +245,7 @@ footer .ver{color:var(--brass);font-weight:700}
 }
 .edit-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:16px;align-items:start}
 .edit-grid > div{min-width:0}
+#revCol{position:sticky;top:16px;align-self:start;max-height:calc(100vh - 32px);overflow-y:auto}
 .seg{
   border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:8px 0;cursor:pointer;
   white-space:pre-wrap;font-size:.9rem;line-height:1.9;background:var(--card);
@@ -370,6 +371,7 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
 @media (max-width:860px){
   #app{padding:0 20px 48px}
   .edit-grid{grid-template-columns:1fr}
+  #revCol{position:static;max-height:none;overflow:visible}
 }
 @media (max-width:640px){
   .notes{grid-template-columns:1fr}
@@ -522,8 +524,9 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
     <button class="back-btn" onclick="goStep(3)">← 返回上一步</button>
     <div class="card" style="max-width:760px;margin-left:auto;margin-right:auto">
       <span class="stamp">内容系统 · 爱听的方式</span>
-      <h3>对着骨架，把你的内容「口喷」出来</h3>
-      <p class="hint">按下面框架分段喷，每段上方有参考表达；不用写完整，像跟朋友聊天一样说真实经历和想法就行。AI 会先定主线、再整理你的素材，最后才搭成一版「口播工作稿」——保留你的原话和口语感，不替你编造，也不替你把话说完。</p>
+      <h3>先定主线，再对着骨架口喷</h3>
+      <p class="hint">上面是 AI 给你定好的主线（目标观众 / 这条只证明什么 / 3 个开头结尾方向）。照着它，按下面框架分段喷真实经历和想法就行，像跟朋友聊天一样，不用写完整。</p>
+      <div class="ws-body" id="wsBox" hidden></div>
       <div class="spit-toggle" id="spitToggle">觉得死框架限制发挥或表达？点这里切换空白大框随意发挥 →</div>
       <div id="spitFrameWrap"></div>
       <div id="spitBlankWrap" hidden>
@@ -537,11 +540,6 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
 
     <div class="edit-grid" id="editCol" hidden>
       <div>
-        <div class="card" id="wsCard" hidden>
-          <span class="stamp">内容系统 · 工作稿说明</span>
-          <h3>先定主线，再动手</h3>
-          <div class="ws-body" id="wsBody"></div>
-        </div>
         <div class="card">
           <span class="stamp">内容系统 · 草稿</span>
           <h3>口播工作稿<span class="badge-draft">草 稿</span></h3>
@@ -553,7 +551,7 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
           </div>
         </div>
       </div>
-      <div>
+      <div id="revCol">
         <div class="card">
           <span class="stamp">内容系统 · 引用提问</span>
           <h3>跟 AI 一来一回改</h3>
@@ -837,9 +835,10 @@ function goStep(n){
   if(n===3){renderPPs();renderStructs();refreshBtn();}
   if(n===4){
     renderSpit();
+    renderWSBox();
     const has=S.segs.length>0;
     el('editCol').hidden=!has;
-    if(has){renderWS();renderDraft();renderRounds();refreshQuoteBar();}
+    if(has){renderDraft();renderRounds();refreshQuoteBar();}
   }
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -896,7 +895,7 @@ const KB = {
   ctx:{ frag:'分析用户素材时的纪律：把「用户明确提供的经历」和「你的推测判断」分开表述；不许编造用户没有提供的经历；信息不足时输出保守结论并说明。分析必须以上下文里用户明确输入的内容（日志、灵感、定位卡、风格卡）为主。人类图是缺乏严谨科学依据的自我观察框架，仅作次要参考——用户未填写就完全忽略；即使用户填写，也只作了解性参考，不要用它下结论、不要把人框进类型标签。'},
   quiz:{ frag:'用定位问卷的维度评估素材价值：过去五年持续投入一年以上的事；别人最常向用户请教什么；做成过什么、结果如何；哪些话题即使没有收入也愿意持续研究；哪一类人的处境是用户真正了解的。命中维度越多的观点，越值得推荐。'},
   style:{ frag:'写作纪律：遵守用户风格卡（口头禅与语气照用，禁词一个不许出现）。避免典型 AI 腔：堆形容词、空洞排比和口号、「家人们」「绝绝子」式套话、强行升华的结尾。像跟一个具体的朋友讲话，多用短句和具体名词，少用抽象大词。'},
-  humanize:{ frag:'去 AI 味不是「把 AI 文改得更像人」，而是：让 AI 少写一点，让用户自己的真实表达多留一点。AI 的职责是提取、整理、排序、连接、提示；用户的职责是提供经历、观点、判断和个人表达。落笔时：不堆空泛大词（赋能/颠覆/重塑/打造/至关重要），不打「首先/其次/最后」的模板骨架，不做三段式排比，不写空泛升华的结尾，不谄媚（不用「当然可以」「希望这对你有帮助」），允许第一人称和真实感受。守住边界：去 AI 味不能改动事实、立场、因果、范围、确定程度，更不能抹掉用户的原话和口语。'},
+  humanize:{ frag:'关于「去 AI 味」：不要把任务理解成「把 AI 腔改回人话」，而是——用 AI 把用户口喷出来的、没逻辑的零碎内容，整理成可以口头表达的内容。核心做法：AI 少写一点，用户自己的真实表达多留一点。AI 的职责是提取、整理、排序、连接、提示；用户的职责是提供经历、观点、判断和个人表达。落笔时保留用户的原话、口语、语气词、停顿和犹豫，不替用户造金句，不堆空泛大词，不做「首先/其次/最后」的模板骨架，不写空泛升华的结尾。'},
   anchor:{ frag:'先定主线再写：动笔前必须显式写明——①目标观众正在面对什么具体问题；②观众真正害怕或困惑的是什么；③这条内容只想证明哪一件事（写成「这条只想证明________」的一句话主线）；④用户有哪些真实经历能证明它；⑤观众看完能马上采取什么行动。先给这句话主线，再动笔，逐段对照是否在服务这条主线，跑题内容不要硬塞。'},
   material:{ frag:'先取材再生成：内容主体必须来自用户自己的真实经历、观点、方法和原话，不许编造用户没提供的经历、数据或观点。整理素材按这条因果链：当时的处境 → 缺少什么 → 原本误以为什么 → 做了什么 → 发生了什么变化。优先引用用户口喷里的原话和具体细节，保留「其实」「真的」「对吧」这类自然口语。'},
   lightedit:{ frag:'默认轻改，不重写。你只可以：删除明显重复、删除影响理解的口水词、调整表达顺序、补充必要的逻辑衔接、提取用户已经说过的观点、帮用户把话讲顺。你不可以：擅自增加用户没经历过的故事/数据/观点、替用户创造金句、把内容改成营销文案/课程讲义/标准爆文、使用整齐对仗或过度总结或过度升华、抹掉用户的犹豫/幽默/口语/个人表达习惯、为了「看起来完整」而编造。'},
@@ -1127,6 +1126,7 @@ function structHTML(s,i){
 el('btnCreate').onclick=()=>{
   el('step3').hidden=true;el('step4').hidden=false;S.step=4;setStage(3);
   renderSpit();
+  genAnchor();
   el('step4').scrollIntoView({behavior:'smooth'});
 };
 
@@ -1170,29 +1170,32 @@ el('btnSpit').onclick=async()=>{
   const mods = S.structSel===4 ? ['anchor','material','lightedit','worksheet','oral','humanize','bigtopic','xianbei','tri'] : ['anchor','material','lightedit','worksheet','oral','humanize','frame4','xianbei','tri'];
   const auxTxt = S.aux.map(i=>(S.painpoints[i]||{}).t).filter(Boolean).join('、');
   const r=await askAI(
-    buildSys('你是凯莉小红书内容系统的写稿搭档，严格按四步走，不许从用户的碎碎念直接生成一篇完整漂亮的文章：①先定主线——写之前确认观众正在面对的问题、观众真正害怕或困惑什么、这条只想证明什么、用户有哪些真实经历能证明、观众看完能采取什么行动；②先取材——口播稿的主体必须来自用户口喷里的真实经历、观点、方法和原话，按「处境→缺少什么→原本误以为→做了什么→发生了什么变化」整理，不许编造；③先结构——把用户口喷整理进选定的骨架，不另起炉灶；④后口播——最后才落成一版保留口语感的口播工作稿。全程默认轻改，不重写、不造金句、不加戏。输出格式（严格照此）：先写「工作稿说明」，依次写明：主线（这条只想证明____）、目标观众、用到的用户素材与原话、还缺什么（需要用户补充）、3 个开头方向、3 个结尾方向；然后单独一行写【口播工作稿】，之后才是口播稿正文，用小标题分段、段与段空一行，保留口语和停顿感，不要替用户把话说完。',...mods),
-    '选定骨架：'+DEMO_STRUCTS_ALL[S.structSel].t+'\n核心痛点：'+((S.painpoints[S.core]||{}).t||'')+'\n辅助痛点：'+auxTxt+'\n\n用户口喷（素材来源，优先用原话）：\n'+S.spit+'\n\n用户其它素材：\n'+materialText(),false);
-  const raw=r||'';
-  const mark='【口播工作稿】';
-  const idx=raw.indexOf(mark);
-  S.ws=(idx>=0)?raw.slice(0,idx).trim():'';
-  S.draft=(idx>=0)?raw.slice(idx+mark.length).trim():raw.trim();
-  if(!S.draft){ S.draft=DEMO_DRAFT; S.ws=DEMO_WS; }
+    buildSys('你是凯莉小红书内容系统的写稿搭档。你的任务不是写一篇漂亮文章，而是把用户口喷出来的、没逻辑的零碎内容，整理成一版可以直接照着口头讲出来的「口播工作稿」。先结构后口播：按已定的骨架把口喷内容排进顺序，尽量少改、少加词，只删明显重复和影响理解的口水词、补必要的逻辑衔接、把话讲顺；保留用户的原话、口语、语气词、停顿和犹豫，不替用户造金句、不擅自加故事数据观点、不改成营销文案或标准爆文，也不要替用户把话说完、写成完成度很高的文章。用【钩子】【痛点】【转折】【方法】【收尾】这类小标题分段，段与段之间空一行，只输出口播稿正文的纯文本（不要再重复工作稿说明）。',...mods),
+    '已定的主线（照着它写，别跑题）：\n'+S.ws+'\n\n选定骨架：'+DEMO_STRUCTS_ALL[S.structSel].t+'\n核心痛点：'+((S.painpoints[S.core]||{}).t||'')+'\n辅助痛点：'+auxTxt+'\n\n用户口喷（你的素材来源，优先用原话，别重写）：\n'+S.spit+'\n\n用户其它素材：\n'+materialText(),false);
+  S.draft=(r&&r.trim())?r.trim():DEMO_DRAFT;
   el('wait3').classList.remove('show');
   S.segs=splitDraft(S.draft);
   S.quote=null; S.rounds=[];
-  renderWS(); renderDraft(); renderRounds(); refreshQuoteBar();
+  renderDraft(); renderRounds(); refreshQuoteBar();
   el('editCol').hidden=false;
   el('editCol').scrollIntoView({behavior:'smooth'});
 };
 function splitDraft(t){
   return t.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
 }
-function renderWS(){
-  const card=el('wsCard');
-  if(!S.ws){card.hidden=true;return;}
-  card.hidden=false;
-  el('wsBody').textContent=S.ws;
+function renderWSBox(){
+  const b=el('wsBox');
+  b.textContent=S.ws;
+  b.hidden=!S.ws;
+}
+async function genAnchor(){
+  const b=el('wsBox');
+  b.hidden=false; b.textContent='正在给你定主线……';
+  const r=await askAI(
+    buildSys('你是凯莉小红书内容系统的选题定锚助手。根据选定骨架、核心痛点、辅助痛点和用户素材，先定主线。输出「工作稿说明」纯文本，依次写明：主线（这条只想证明____，一句话）、目标观众、核心痛点、辅助痛点、用户已提供的真实素材、还缺什么（需要用户补的真实经历）、3 个开头方向、3 个结尾方向。只写这份说明清单，不写正文，不替用户把话说完。','anchor','material','worksheet','tri'),
+    '选定骨架：'+DEMO_STRUCTS_ALL[S.structSel].t+'\n核心痛点：'+((S.painpoints[S.core]||{}).t||'')+'\n辅助痛点：'+S.aux.map(i=>(S.painpoints[i]||{}).t).filter(Boolean).join('、')+'\n\n用户素材：\n'+materialText(),false);
+  S.ws=(r&&r.trim())?r.trim():DEMO_WS;
+  renderWSBox();
 }
 function renderDraft(){
   el('draftSegs').innerHTML=S.segs.map((s,i)=>`
@@ -1201,12 +1204,14 @@ function renderDraft(){
       <textarea class="seg-edit" data-i="${i}">${esc(s)}</textarea>
     </div>`).join('');
   $$('.seg-edit').forEach(t=>{
-    t.addEventListener('input',()=>{S.segs[+t.dataset.i]=t.value;S.draft=S.segs.join('\n\n');});
+    autosize(t);
+    t.addEventListener('input',()=>{S.segs[+t.dataset.i]=t.value;S.draft=S.segs.join('\n\n');autosize(t);});
     t.addEventListener('focus',()=>{S.activeSeg=+t.dataset.i;});
     t.addEventListener('select',()=>{S.activeSeg=+t.dataset.i;});
   });
   $$('.seg-tool').forEach(b=>b.onclick=()=>{S.activeSeg=+b.dataset.sel;quoteSelection();});
 }
+function autosize(t){t.style.height='auto';t.style.height=(t.scrollHeight+2)+'px';}
 function quoteSelection(){
   const i=(S.activeSeg!=null)?S.activeSeg:0;
   const ta=el('draftSegs').querySelector('.seg-edit[data-i="'+i+'"]');
