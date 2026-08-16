@@ -200,6 +200,7 @@ textarea.f{resize:vertical;min-height:74px}
 .back-btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:.8rem;padding:6px 12px;cursor:pointer;font-family:inherit;margin:2px 0 10px}
 .back-btn:hover{color:var(--green-deep);border-color:var(--green-line)}
 .voice-hint{font-size:.72rem;color:var(--muted);margin:6px 0 0;line-height:1.6}
+.ws-body{white-space:pre-wrap;line-height:1.75;font-size:.85rem;color:var(--ink);background:var(--paper);border:1px dashed var(--green-line);border-radius:10px;padding:12px 14px}
 .seg{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;background:var(--card)}
 .seg.quoted{border:1.5px solid var(--green-deep);box-shadow:0 0 0 3px var(--green-soft)}
 .seg .seg-no{font-size:.62rem;color:var(--muted);letter-spacing:.08em;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center}
@@ -522,24 +523,29 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
     <div class="card" style="max-width:760px;margin-left:auto;margin-right:auto">
       <span class="stamp">内容系统 · 爱听的方式</span>
       <h3>对着骨架，把你的内容「口喷」出来</h3>
-      <p class="hint">按下面的框架分段喷，每段上方有参考表达；不用写完整，像跟朋友聊天一样说就行。AI 会帮你搭成一篇完整的稿子。</p>
+      <p class="hint">按下面框架分段喷，每段上方有参考表达；不用写完整，像跟朋友聊天一样说真实经历和想法就行。AI 会先定主线、再整理你的素材，最后才搭成一版「口播工作稿」——保留你的原话和口语感，不替你编造，也不替你把话说完。</p>
       <div class="spit-toggle" id="spitToggle">觉得死框架限制发挥或表达？点这里切换空白大框随意发挥 →</div>
       <div id="spitFrameWrap"></div>
       <div id="spitBlankWrap" hidden>
         <textarea class="f" id="spitInput" rows="7" placeholder="把你想说的整段喷出来，想到哪说到哪……"></textarea>
       </div>
-      <button class="btn" id="btnSpit">基于骨架 + 我的口喷，出完整草稿 →</button>
+      <button class="btn" id="btnSpit">先定主线，再出「口播工作稿」→</button>
       <p class="voice-hint">💡 想更快？直接用手机 / 输入法自带的语音输入，对着说就行（本版暂未内置语音识别）。</p>
     </div>
 
-    <div class="ai-wait" id="wait3"><div class="eye"></div><p>AI 正在把你的口喷整理成完整口播稿……<br>记住：它写的是草稿，终稿永远是你的</p></div>
+    <div class="ai-wait" id="wait3"><div class="eye"></div><p>AI 正在定主线、整理你的真实素材，再搭「口播工作稿」……<br>记住：它写的永远是草稿，终稿是你的</p></div>
 
     <div class="edit-grid" id="editCol" hidden>
       <div>
+        <div class="card" id="wsCard" hidden>
+          <span class="stamp">内容系统 · 工作稿说明</span>
+          <h3>先定主线，再动手</h3>
+          <div class="ws-body" id="wsBody"></div>
+        </div>
         <div class="card">
           <span class="stamp">内容系统 · 草稿</span>
-          <h3>口播草稿<span class="badge-draft">草 稿</span></h3>
-          <p class="hint">每段都能直接改；选中段里的某几个字 / 一句话，去右边点「引用选中词句」，让 AI 只改那部分。</p>
+          <h3>口播工作稿<span class="badge-draft">草 稿</span></h3>
+          <p class="hint">每段都能直接改，改了实时生效；选中段里的某几个字 / 一句话，去右边点「引用选中词句」，让 AI 只改那部分、别的地方不动。</p>
           <div id="draftSegs"></div>
           <div style="display:flex;gap:8px">
             <button class="btn ghost sm" id="btnCopy" style="flex:1">复制整篇草稿</button>
@@ -761,7 +767,7 @@ const S = {
   painpoints:[], core:-1, aux:[],
   structSel:-1,
   spit:'', spitMode:'frame', spitFrame:{sel:-1,vals:[]},
-  draft:'', segs:[], quote:null, activeSeg:0,
+  draft:'', segs:[], quote:null, activeSeg:0, ws:'',
   rounds:[], roundId:0,
   pkb:{mat:[],top:[],con:[],rev:[]},
   archives:[], aid:0
@@ -833,7 +839,7 @@ function goStep(n){
     renderSpit();
     const has=S.segs.length>0;
     el('editCol').hidden=!has;
-    if(has){renderDraft();renderRounds();refreshQuoteBar();}
+    if(has){renderWS();renderDraft();renderRounds();refreshQuoteBar();}
   }
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -890,7 +896,11 @@ const KB = {
   ctx:{ frag:'分析用户素材时的纪律：把「用户明确提供的经历」和「你的推测判断」分开表述；不许编造用户没有提供的经历；信息不足时输出保守结论并说明。分析必须以上下文里用户明确输入的内容（日志、灵感、定位卡、风格卡）为主。人类图是缺乏严谨科学依据的自我观察框架，仅作次要参考——用户未填写就完全忽略；即使用户填写，也只作了解性参考，不要用它下结论、不要把人框进类型标签。'},
   quiz:{ frag:'用定位问卷的维度评估素材价值：过去五年持续投入一年以上的事；别人最常向用户请教什么；做成过什么、结果如何；哪些话题即使没有收入也愿意持续研究；哪一类人的处境是用户真正了解的。命中维度越多的观点，越值得推荐。'},
   style:{ frag:'写作纪律：遵守用户风格卡（口头禅与语气照用，禁词一个不许出现）。避免典型 AI 腔：堆形容词、空洞排比和口号、「家人们」「绝绝子」式套话、强行升华的结尾。像跟一个具体的朋友讲话，多用短句和具体名词，少用抽象大词。'},
-  humanize:{ frag:'去 AI 味纪律（Humanizer-zh 方法论）：写出的中文必须像母语者真实写出来的，不像翻译稿或模型拼接稿。硬规则：①不用空泛大词套话——「赋能」「颠覆」「重塑」「打造」「至关重要」「深入探讨」「开启新篇章」「标志着」「见证了」一律不用，抽象判断必须落回具体动作、成本、结果；②打散机械结构——不用「首先/其次/最后」「与此同时」「值得注意的是」这类模板连接词，少用「不是……而是……」否定排比，三段式排比改成两句或四句；③句子长短错落，别句句等长，段落结尾别总落在一句漂亮的价值升华上；④少用破折号「——」和冒号，能改逗号、句号或拆句就改；⑤别谄媚——不用「当然可以」「希望这对你有帮助」「好问题」这类客服腔；⑥允许第一人称和真实感受，先给机制/证据再下判断，承认复杂性；⑦宁可有观点、有细节、有一点乱，也不要通篇工整得像报告。守住边界：不能为了去 AI 味而改动事实、立场、因果、范围或确定程度。交付前自查：有没有连续三句等长？有没有「此外/然而/首先」？有没有排比三连？有没有空泛升华的结尾？'},
+  humanize:{ frag:'去 AI 味不是「把 AI 文改得更像人」，而是：让 AI 少写一点，让用户自己的真实表达多留一点。AI 的职责是提取、整理、排序、连接、提示；用户的职责是提供经历、观点、判断和个人表达。落笔时：不堆空泛大词（赋能/颠覆/重塑/打造/至关重要），不打「首先/其次/最后」的模板骨架，不做三段式排比，不写空泛升华的结尾，不谄媚（不用「当然可以」「希望这对你有帮助」），允许第一人称和真实感受。守住边界：去 AI 味不能改动事实、立场、因果、范围、确定程度，更不能抹掉用户的原话和口语。'},
+  anchor:{ frag:'先定主线再写：动笔前必须显式写明——①目标观众正在面对什么具体问题；②观众真正害怕或困惑的是什么；③这条内容只想证明哪一件事（写成「这条只想证明________」的一句话主线）；④用户有哪些真实经历能证明它；⑤观众看完能马上采取什么行动。先给这句话主线，再动笔，逐段对照是否在服务这条主线，跑题内容不要硬塞。'},
+  material:{ frag:'先取材再生成：内容主体必须来自用户自己的真实经历、观点、方法和原话，不许编造用户没提供的经历、数据或观点。整理素材按这条因果链：当时的处境 → 缺少什么 → 原本误以为什么 → 做了什么 → 发生了什么变化。优先引用用户口喷里的原话和具体细节，保留「其实」「真的」「对吧」这类自然口语。'},
+  lightedit:{ frag:'默认轻改，不重写。你只可以：删除明显重复、删除影响理解的口水词、调整表达顺序、补充必要的逻辑衔接、提取用户已经说过的观点、帮用户把话讲顺。你不可以：擅自增加用户没经历过的故事/数据/观点、替用户创造金句、把内容改成营销文案/课程讲义/标准爆文、使用整齐对仗或过度总结或过度升华、抹掉用户的犹豫/幽默/口语/个人表达习惯、为了「看起来完整」而编造。'},
+  worksheet:{ frag:'输出目标不是「文章」，而是「口播工作稿」：一份用户可以边看边讲、边讲边改的表达骨架。不要追求完成度很高的文章，不要替用户把所有话说完，保留口语感、停顿感和可修改空间；还要明确标出「哪些地方还缺用户补充」。所有 AI 输出都只是草稿，终稿权始终在用户。'},
   oral:{ frag:'产出为口播稿：口语、短句、说人话。每一段都必须在解决观众的具体问题——不跑题（每部分围绕核心痛点）、句句有用（都是干货）、讲到心坎上（是观众期待的内容）。先想清楚「为什么讲」再动笔。'},
   native:{ frag:'AI-Native 原则：不要问「这一步怎么交给 AI」，要问「如果 AI 从一开始就存在，这个流程应该长什么样」。把人从机械劳动里解放出来，把判断权和最终表达留给人。'},
   position:{ frag:'账号定位纪律：先读用户【定位卡】，判断这条内容属于用户自己的哪根内容支柱，再动笔；语言照用户【风格卡】的口头禅与语气写，保留原话，删除连续重复与绕句；避免整齐对仗的营销话术、夸大焦虑、网感套话。'},
@@ -976,6 +986,12 @@ const DEMO_DRAFT=`【钩子】我脑子里每天冒出二十个灵感，昨天�
 【方法】后来我做了三件事。第一，便签只允许写一句话，谁写完整我跟谁急。第二，把朋友圈当试验田——随手发出去，点赞就是观众投票，你会发现随手写的比正经写的更打动人。第三，每个月底，把这堆碎碎念丢给 AI，让它帮我找出反复出现的主题——我管这个叫「弹药库」。
 
 【收尾】你不需要更好的笔记软件，你需要更低的开始门槛。评论区留一句你昨天忘掉的灵感，我帮你看看哪句值得写成一篇。`;
+const DEMO_WS=`主线：这条只想证明——记不住灵感不是懒，是记录的门槛太高了。
+目标观众：想做复盘记录、但一想到要写完整就放弃的成长型选手。
+用到的素材：①通勤/洗澡/睡前灵感很多；②一打开备忘录就纠结要不要写完整；③朋友圈随手发的点赞反而更多。
+还缺什么：①一次具体的「因为没记录而错过机会」的例子；②用一句话记录之后带来的真实变化。
+开头方向：①「我脑子里每天冒二十个灵感，昨天一个没留住」；②「你不是懒，是把记录硬生生搞成了写作」；③「越认真记录的人，越容易一个字都记不下来」。
+结尾方向：①「先记一句，剩下的交给月底的 AI」；②「评论留一句你昨天忘掉的灵感，我帮你看哪句值得写」；③「门槛降下来，表达才会涨上去」。`;
 const DEMO_REVISE=`【钩子】周二早上八点，地铁到站前，我突然想到一个特别想说的点。等我掏出手机，到公司一忙，下午再想——那个点已经没了。`;
 const DEMO_TEARDOWN=[
   {b:'帮谁解决了什么问题',d:'这篇在解决「想记录却总觉得自己写不好」的人，给他们一个「记录可以不完整」的台阶。'},
@@ -1151,20 +1167,32 @@ el('btnSpit').onclick=async()=>{
     S.spit=DEMO_SPIT; S.spitMode='blank'; S.spitFrame={sel:-1,vals:[]}; renderSpit(); el('spitInput').value=DEMO_SPIT;
   }
   el('wait3').classList.add('show');
-  const mods = S.structSel===4 ? ['oral','style','humanize','bigtopic','xianbei','tri'] : ['oral','style','humanize','frame4','xianbei','tri'];
+  const mods = S.structSel===4 ? ['anchor','material','lightedit','worksheet','oral','humanize','bigtopic','xianbei','tri'] : ['anchor','material','lightedit','worksheet','oral','humanize','frame4','xianbei','tri'];
+  const auxTxt = S.aux.map(i=>(S.painpoints[i]||{}).t).filter(Boolean).join('、');
   const r=await askAI(
-    buildSys('你是口播稿写手。根据骨架和用户的口喷内容，写一版完整的 3-5 分钟口播草稿：口语化、句句解决具体问题、不堆形容词。用【钩子】【痛点】【转折】【方法】【收尾】等小标题分段，段与段之间空一行。输出纯文本。',...mods),
-    '骨架：'+DEMO_STRUCTS_ALL[S.structSel].t+'\n核心痛点：'+(S.painpoints[S.core]||{}).t+'\n用户口喷：\n'+S.spit+'\n用户素材：\n'+materialText(),false);
-  S.draft=r||DEMO_DRAFT;
+    buildSys('你是凯莉小红书内容系统的写稿搭档，严格按四步走，不许从用户的碎碎念直接生成一篇完整漂亮的文章：①先定主线——写之前确认观众正在面对的问题、观众真正害怕或困惑什么、这条只想证明什么、用户有哪些真实经历能证明、观众看完能采取什么行动；②先取材——口播稿的主体必须来自用户口喷里的真实经历、观点、方法和原话，按「处境→缺少什么→原本误以为→做了什么→发生了什么变化」整理，不许编造；③先结构——把用户口喷整理进选定的骨架，不另起炉灶；④后口播——最后才落成一版保留口语感的口播工作稿。全程默认轻改，不重写、不造金句、不加戏。输出格式（严格照此）：先写「工作稿说明」，依次写明：主线（这条只想证明____）、目标观众、用到的用户素材与原话、还缺什么（需要用户补充）、3 个开头方向、3 个结尾方向；然后单独一行写【口播工作稿】，之后才是口播稿正文，用小标题分段、段与段空一行，保留口语和停顿感，不要替用户把话说完。',...mods),
+    '选定骨架：'+DEMO_STRUCTS_ALL[S.structSel].t+'\n核心痛点：'+((S.painpoints[S.core]||{}).t||'')+'\n辅助痛点：'+auxTxt+'\n\n用户口喷（素材来源，优先用原话）：\n'+S.spit+'\n\n用户其它素材：\n'+materialText(),false);
+  const raw=r||'';
+  const mark='【口播工作稿】';
+  const idx=raw.indexOf(mark);
+  S.ws=(idx>=0)?raw.slice(0,idx).trim():'';
+  S.draft=(idx>=0)?raw.slice(idx+mark.length).trim():raw.trim();
+  if(!S.draft){ S.draft=DEMO_DRAFT; S.ws=DEMO_WS; }
   el('wait3').classList.remove('show');
   S.segs=splitDraft(S.draft);
   S.quote=null; S.rounds=[];
-  renderDraft(); renderRounds(); refreshQuoteBar();
+  renderWS(); renderDraft(); renderRounds(); refreshQuoteBar();
   el('editCol').hidden=false;
   el('editCol').scrollIntoView({behavior:'smooth'});
 };
 function splitDraft(t){
   return t.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+}
+function renderWS(){
+  const card=el('wsCard');
+  if(!S.ws){card.hidden=true;return;}
+  card.hidden=false;
+  el('wsBody').textContent=S.ws;
 }
 function renderDraft(){
   el('draftSegs').innerHTML=S.segs.map((s,i)=>`
@@ -1207,7 +1235,7 @@ el('btnAsk').onclick=async()=>{
   const seg=S.segs[S.quote.seg];
   const before=seg.slice(0,S.quote.start), after=seg.slice(S.quote.end);
   const r=await askAI(
-    buildSys('你是口播改稿搭档。用户从草稿里选中了一小段（几个词到一句话）要求改表达。你只改「被选中的这部分」的表达，输出改后的这部分文本；选中范围之外的内容一个字都不许改。改的时候必须读上下文（选中部分前后各一句），保证改完的词句和前后句衔接自然、不孤立——人称、指代、时态、语气都要顺，读起来像原本就写在这。输出 JSON：{"revised":"只含改后选中部分的文本，不要带前后文"}','humanize','style','oral','tri'),
+    buildSys('你是口播改稿搭档。用户从草稿里选中了一小段（几个词到一句话）要改表达，你只改「被选中的这部分」，输出改后这部分文本；选中范围之外一个字都不许改。默认轻改：只删重复、删口水词、调顺序、补逻辑衔接、把话讲顺；不许替用户加故事/数据/观点，不许造金句，不许抹掉用户的犹豫、幽默、口语和个人表达。改的时候必须读上下文（选中部分前后各一句），保证人称、指代、时态、语气衔接自然、不孤立。输出 JSON：{"revised":"只含改后选中部分的文本，不要带前后文"}','lightedit','material','humanize','style','oral','tri'),
     '整篇草稿：\n'+S.draft+'\n\n被选中的部分（只改这部分）：\n「'+S.quote.text+'」\n\n它的上下文——前一句末尾：'+before.slice(-40)+'\n后一句开头：'+after.slice(0,40)+'\n\n用户要求：'+q,true);
   const revised=(r&&r.revised)?r.revised:S.quote.text;
   S.rounds.unshift({id:++S.roundId, seg:S.quote.seg, start:S.quote.start, end:S.quote.end, quote:S.quote.text, ask:q, revised, status:'open'});
@@ -1295,7 +1323,7 @@ function snapshot(){
     painpoints:S.painpoints, core:S.core, aux:S.aux,
     structSel:S.structSel,
     spit:S.spit, spitMode:S.spitMode, spitFrame:S.spitFrame,
-    segs:S.segs.slice(), draft:S.draft
+    segs:S.segs.slice(), draft:S.draft, ws:S.ws
   };
 }
 function applySnapshot(s){
@@ -1305,6 +1333,7 @@ function applySnapshot(s){
   S.spit=s.spit||''; S.spitMode=s.spitMode||'frame'; S.spitFrame=s.spitFrame||{sel:-1,vals:[]};
   S.segs=(s.segs&&s.segs.length)?s.segs.slice():[];
   S.draft=s.draft||S.segs.join('\n\n');
+  S.ws=s.ws||'';
   S.rounds=[]; S.roundId=0; S.quote=null;
 }
 function saveArchive(){
