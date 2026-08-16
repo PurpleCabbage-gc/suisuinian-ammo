@@ -1,0 +1,1240 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>碎碎念弹药库 · 把「我有东西想说」变成「原来我也可以讲」</title>
+<meta name="description" content="AI 从你的真实碎碎念里发现值得表达的观点，裂变成选题，再和你一起把内容写出来。AI 出草稿，你出终稿。">
+<style>
+:root{
+  --paper:#F6F3EC;
+  --card:#FFFDF8;
+  --ink:#23281F;
+  --muted:#837D6E;
+  --green:#2F6B4F;
+  --green-deep:#24523D;
+  --green-soft:#E4EEE6;
+  --green-line:#C9DCCE;
+  --brass:#A97F24;
+  --brass-soft:#F5EAD3;
+  --note:#FFF9DD;
+  --line:#E6E0D1;
+  --line-soft:#EFEAE0;
+  --ok:#2F6B4F;
+  --ok-soft:#E4EEE6;
+  --warn:#B4553D;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"PingFang SC","Microsoft YaHei","Noto Sans SC","Source Han Sans SC",system-ui,sans-serif;
+  font-size:16px;line-height:1.75;
+}
+#app{max-width:1000px;margin:0 auto;padding:0 32px 60px}
+.serif{font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",serif}
+.mono{font-family:ui-monospace,"Cascadia Code",Consolas,monospace}
+
+/* ---------- header ---------- */
+header{padding:34px 0 6px;display:flex;align-items:flex-end;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+.logo{flex:1;min-width:0}
+.logo h1{margin:0;font-size:1.5rem;letter-spacing:.04em;font-weight:800;line-height:1.25}
+.logo p{margin:3px 0 0;font-size:.76rem;color:var(--muted);letter-spacing:.02em}
+.iconbtn{
+  border:1px solid var(--line);background:var(--card);color:var(--muted);
+  width:36px;height:36px;border-radius:9px;font-size:.9rem;cursor:pointer;flex:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.iconbtn:active{transform:scale(.94)}
+
+/* ---------- tabs (underline style) ---------- */
+.tabs{display:flex;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tabs button{
+  border:none;background:transparent;padding:11px 2px;margin-right:22px;
+  font-size:.86rem;color:var(--muted);cursor:pointer;font-family:inherit;position:relative;
+}
+.tabs button.on{color:var(--green-deep);font-weight:700}
+.tabs button.on::after{
+  content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--green-deep);
+}
+
+/* ---------- progress ---------- */
+.stages{margin:2px 0 22px}
+.stages .bar{display:flex;gap:5px;height:6px}
+.stages .bar i{flex:1;border-radius:2px;background:var(--line-soft);transition:background .5s}
+.stages .bar i.done{background:var(--green)}
+.stages .bar i.cur{background:var(--brass);animation:fill 1.8s infinite}
+@keyframes fill{0%,100%{opacity:.5}50%{opacity:1}}
+.stages .labels{display:flex;margin-top:7px}
+.stages .labels span{flex:1;text-align:center;font-size:.68rem;color:var(--muted);letter-spacing:.03em}
+.stages .labels span.on{color:var(--green-deep);font-weight:700}
+
+/* ---------- stamp tag ---------- */
+.stamp{
+  display:inline-block;font-size:.66rem;font-weight:700;color:var(--green-deep);
+  border:1.5px solid var(--green-deep);border-radius:4px;padding:1px 8px;
+  letter-spacing:.14em;transform:rotate(-1.2deg);margin-bottom:10px;
+  font-family:inherit;
+}
+
+/* ---------- flow wrapper (steps 1-3 centered) ---------- */
+.flow{max-width:760px;margin:0 auto}
+
+/* ---------- cards ---------- */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:18px 18px 16px;margin:14px 0;
+  animation:rise .4s ease both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card h3{margin:0 0 4px;font-size:1.02rem;font-weight:800;letter-spacing:.02em}
+.card .hint{font-size:.78rem;color:var(--muted);margin:0 0 12px;line-height:1.65}
+
+label.f{display:block;font-size:.78rem;color:var(--muted);margin:12px 0 4px;letter-spacing:.03em}
+input.f,textarea.f,select.f{
+  width:100%;border:1px solid var(--line);border-radius:8px;background:var(--paper);
+  padding:9px 12px;font-size:.92rem;font-family:inherit;color:var(--ink);
+}
+input.f:focus,textarea.f:focus,select.f:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+textarea.f{resize:vertical;min-height:74px}
+.link{color:var(--green-deep);text-decoration:none;border-bottom:1px solid var(--green-line)}
+
+/* sticky notes */
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.note{
+  border:1px solid #E3D9B8;border-radius:6px;background:
+    repeating-linear-gradient(transparent,transparent 25px,#EFE7C2 25px,#EFE7C2 26px),
+    var(--note);
+  padding:12px 8px 8px;transform:rotate(-1.4deg);position:relative;
+}
+.note:nth-child(2){transform:rotate(1.1deg)}
+.note:nth-child(3){transform:rotate(-.5deg)}
+.note::before{ /* tape */
+  content:"";position:absolute;top:-7px;left:50%;width:44px;height:14px;
+  transform:translateX(-50%) rotate(-2deg);
+  background:rgba(169,127,36,.28);border-radius:1px;
+}
+.note.filled{border-color:var(--brass)}
+.note.filled::before{background:rgba(47,107,79,.35)}
+.note b{display:block;font-size:.66rem;color:var(--brass);margin-bottom:2px;letter-spacing:.1em}
+.note.filled b{color:var(--green-deep)}
+.note textarea{
+  width:100%;border:none;background:transparent;font-size:.78rem;font-family:inherit;
+  resize:vertical;min-height:60px;color:var(--ink);line-height:26px;
+}
+.note textarea:focus{outline:none}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:block;width:100%;border:none;border-radius:10px;background:var(--green-deep);color:#FBF9F2;
+  font-size:.98rem;font-weight:700;font-family:inherit;padding:13px 0;cursor:pointer;letter-spacing:.04em;
+  margin:16px 0 6px;transition:background .2s;
+}
+.btn:active{background:var(--ink)}
+.btn[disabled]{background:var(--line-soft);color:#B0A897;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--green-deep);border:1.5px solid var(--green-deep)}
+.btn.sm{padding:9px 0;font-size:.86rem;margin:10px 0 0}
+
+/* processing */
+.ai-wait{display:none;text-align:center;padding:30px 0}
+.ai-wait.show{display:block}
+.ai-wait .eye{width:10px;height:10px;border-radius:2px;background:var(--brass);margin:0 auto 12px;animation:fill 1s infinite;transform:rotate(45deg)}
+.ai-wait p{color:var(--muted);font-size:.86rem;margin:0;line-height:1.8}
+
+/* ---------- viewpoint cards ---------- */
+.vp{border:1px solid var(--line);border-radius:10px;padding:14px;margin:10px 0;cursor:pointer;background:var(--card);transition:border .2s,background .2s}
+.vp:active{transform:scale(.99)}
+.vp.sel{border:1.5px solid var(--green-deep);background:#FBFAF3;box-shadow:0 0 0 3px var(--green-soft)}
+.vp .top{display:flex;align-items:center;gap:10px}
+.vp .tile{
+  width:44px;height:44px;border-radius:8px;background:var(--green-deep);color:#F6F3EC;
+  display:flex;align-items:center;justify-content:center;flex:none;
+  font-size:1.3rem;font-weight:800;font-family:"Noto Serif SC","Source Han Serif SC","Songti SC",serif;
+}
+.vp .t{font-weight:750;font-size:.94rem;flex:1;line-height:1.45}
+.vp .meta{font-size:.73rem;color:var(--muted);margin:8px 0 4px}
+.vp .row{display:flex;align-items:center;gap:8px;font-size:.7rem;color:var(--muted);margin-top:5px}
+.vp .row em{font-style:normal;width:52px;flex:none;letter-spacing:.05em}
+.vp .meter{flex:1;height:4px;border-radius:1px;background:var(--line-soft);overflow:hidden}
+.vp .meter i{display:block;height:100%;background:var(--green)}
+.vp .stars{color:var(--brass);letter-spacing:2px;font-size:.76rem}
+.chip{display:inline-block;background:var(--green-soft);color:var(--green-deep);font-size:.67rem;border-radius:3px;padding:1px 7px;margin:6px 4px 0 0}
+
+/* ---------- painpoints ---------- */
+.pp{
+  display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);
+  border-radius:9px;padding:12px 13px;margin:8px 0;cursor:pointer;background:var(--card);
+}
+.pp .cb{
+  width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);flex:none;
+  display:flex;align-items:center;justify-content:center;font-size:.7rem;color:transparent;margin-top:2px;
+  transition:all .2s;
+}
+.pp.core{border-color:var(--green-deep);background:#FBFAF3}
+.pp.core .cb{background:var(--green-deep);border-color:var(--green-deep);color:#F6F3EC}
+.pp.aux{border-color:var(--brass)}
+.pp.aux .cb{background:var(--brass);border-color:var(--brass);color:#FFFDF8}
+.pp .tx b{font-size:.88rem;font-weight:700;display:block;line-height:1.5}
+.pp .tx small{color:var(--muted);font-size:.72rem}
+.pp .role{
+  font-size:.62rem;border-radius:3px;padding:1px 6px;margin-left:6px;vertical-align:2px;letter-spacing:.08em;
+}
+.pp.core .role{background:var(--green-deep);color:#F6F3EC}
+.pp.aux .role{background:var(--brass-soft);color:var(--brass);border:1px solid var(--brass)}
+.counter{text-align:center;font-size:.76rem;color:var(--muted);margin:12px 0 0;letter-spacing:.03em}
+.counter b{color:var(--green-deep)}
+
+/* verify card */
+.verify{border:1px dashed var(--muted);border-radius:9px;padding:16px;background:#FCFAF2}
+.verify h4{margin:0 0 6px;font-size:.9rem;letter-spacing:.02em}
+.verify p{font-size:.79rem;color:var(--muted);margin:0 0 4px;line-height:1.7}
+.kw{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 12px}
+.kw span{
+  border:1px solid var(--green-line);color:var(--green-deep);border-radius:5px;
+  font-size:.78rem;padding:3px 12px;cursor:pointer;background:var(--card);
+}
+.kw span:active{background:var(--green-soft)}
+.checkline{display:flex;gap:9px;align-items:flex-start;font-size:.79rem;margin-top:8px;cursor:pointer;color:var(--ink)}
+.checkline input{width:17px;height:17px;accent-color:var(--green-deep);margin-top:3px;flex:none}
+.caution{background:#FBF3E6;border:1px solid #EADFC2;border-radius:8px;padding:10px 12px;font-size:.78rem;color:#8A6D3B;line-height:1.7;margin:8px 0}
+
+/* ---------- structure ---------- */
+.struct{border:1px solid var(--line);border-radius:9px;padding:13px 14px;margin:8px 0;cursor:pointer}
+.struct.sel{border:1.5px solid var(--green-deep);background:#FBFAF3;box-shadow:0 0 0 3px var(--green-soft)}
+.struct b{font-size:.9rem;letter-spacing:.02em}
+.struct small{display:block;color:var(--muted);font-size:.75rem;margin-top:3px;line-height:1.65}
+.struct-divider{font-size:.72rem;color:var(--muted);margin:14px 0 2px;border-top:1px dashed var(--line);padding-top:10px}
+
+/* teardown (secondary / collapsed) */
+.card details summary{cursor:pointer;font-size:.9rem;font-weight:700;color:var(--green-deep);letter-spacing:.02em;list-style:none}
+.card details summary::before{content:"▸ ";color:var(--brass)}
+.card details[open] summary::before{content:"▾ "}
+.td-res{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:14px;margin-top:10px}
+.td-res .row2{margin:7px 0;font-size:.83rem;line-height:1.7}
+.td-res .row2 b{color:var(--green-deep);margin-right:6px}
+
+/* ---------- draft & multi-round edit ---------- */
+.badge-draft{
+  display:inline-block;font-size:.63rem;font-weight:700;color:var(--brass);
+  border:1px solid var(--brass);border-radius:3px;padding:0 6px;margin-left:8px;vertical-align:2px;
+  letter-spacing:.1em;
+}
+.edit-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:16px;align-items:start}
+.edit-grid > div{min-width:0}
+.seg{
+  border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:8px 0;cursor:pointer;
+  white-space:pre-wrap;font-size:.9rem;line-height:1.9;background:var(--card);
+  transition:border .15s,background .15s;position:relative;
+}
+.seg:hover{border-color:var(--green-line)}
+.seg.quoted{border:1.5px solid var(--green-deep);background:#FBFAF3;box-shadow:0 0 0 3px var(--green-soft)}
+.seg .seg-no{font-size:.62rem;color:var(--muted);letter-spacing:.08em;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center}
+.seg .seg-no b{color:var(--green-deep);font-weight:700}
+.seg .quote-tag{display:none;font-size:.6rem;color:var(--brass);border:1px solid var(--brass);border-radius:3px;padding:0 5px}
+.seg.quoted .quote-tag{display:inline-block}
+.quote-bar{background:var(--brass-soft);border:1px solid var(--brass);border-radius:7px;padding:6px 10px;font-size:.78rem;color:var(--brass);margin:8px 0}
+.quote-bar b{color:var(--green-deep)}
+.round{border:1px solid var(--line);border-radius:9px;padding:12px 13px;margin:10px 0;background:var(--card)}
+.round.done{opacity:.74;background:var(--green-soft)}
+.round .r-meta{font-size:.66rem;color:var(--muted);margin-bottom:6px;display:flex;gap:8px;flex-wrap:wrap}
+.round .r-meta .st{color:var(--green-deep);font-weight:700}
+.round .r-ask{font-size:.85rem;margin:6px 0}
+.round .r-ask b{color:var(--green-deep)}
+.round .r-quote{border-left:3px solid var(--line);padding:2px 0 2px 10px;font-size:.78rem;color:var(--muted);margin:6px 0;line-height:1.7}
+.round .r-quote s{color:var(--warn);background:rgba(180,85,61,.08)}
+.rev-new{width:100%;margin-top:6px;border:1px solid var(--green-line);border-radius:7px;padding:9px 11px;font-size:.88rem;font-family:inherit;line-height:1.75;background:var(--green-soft);color:var(--green-deep);resize:vertical;min-height:64px}
+.round .r-actions{display:flex;gap:8px;margin-top:8px}
+.r-btn{flex:1;border-radius:7px;padding:8px 0;font-size:.82rem;font-weight:700;cursor:pointer;border:1.5px solid;font-family:inherit}
+.r-accept{background:var(--green-deep);color:#FBF9F2;border-color:var(--green-deep)}
+.r-reject{background:transparent;color:var(--muted);border-color:var(--line)}
+
+/* ---------- 口喷 framed input ---------- */
+.spit-toggle{display:inline-block;font-size:.76rem;color:var(--green-deep);cursor:pointer;border-bottom:1px dashed var(--green-line);margin:2px 0 6px;user-select:none}
+.spit-toggle:hover{color:var(--green-deep);border-bottom-style:solid}
+.spit-sec{margin:13px 0}
+.spit-sec-hd{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.spit-sec-hd b{font-size:.82rem;color:var(--green-deep);letter-spacing:.02em}
+.spit-sec-hd span{font-size:.72rem;color:var(--muted)}
+.spit-t{min-height:58px}
+
+/* ---------- ai status pill ---------- */
+.ai-status{
+  display:inline-flex;align-items:center;gap:6px;font-size:.7rem;color:var(--muted);
+  border:1px solid var(--line);border-radius:20px;padding:3px 12px;cursor:pointer;flex:none;
+  align-self:center;margin-left:auto;white-space:nowrap;
+}
+.ai-status .dot{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.ai-status.live{color:var(--green-deep);border-color:var(--green-line);background:var(--green-soft)}
+.ai-status.live .dot{background:var(--green)}
+
+/* ---------- provider site in settings ---------- */
+.provider-site{margin:6px 0 4px;padding:10px 12px;background:var(--green-soft);border:1px solid var(--green-line);border-radius:8px;font-size:.78rem}
+.provider-site b{display:block;color:var(--green-deep);margin-bottom:3px}
+.provider-site a{color:var(--green-deep);word-break:break-all;text-decoration:none;border-bottom:1px solid var(--green-line)}
+.provider-site p{margin:5px 0 0;color:var(--muted);font-size:.74rem;line-height:1.6}
+
+/* ---------- knowledge base ---------- */
+.kb-mod{border-top:1px dashed var(--line);padding:14px 2px 4px;margin-top:4px}
+.kb-mod:first-of-type{border-top:none}
+.kb-mod .kb-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.kb-mod b{font-size:.92rem;letter-spacing:.02em}
+.kb-src{
+  font-size:.62rem;color:var(--brass);border:1px solid var(--brass);
+  border-radius:3px;padding:0 5px;letter-spacing:.05em;white-space:nowrap;
+}
+.kb-mod .kb-one{font-size:.8rem;margin:3px 0 2px;color:var(--ink)}
+.kb-mod .kb-use{font-size:.7rem;color:var(--muted)}
+.kb-mod .kb-use em{font-style:normal;color:var(--green-deep);font-weight:650}
+
+/* personal knowledge base */
+.pkb-sec{border-top:1px dashed var(--line);padding:14px 2px 6px;margin-top:4px}
+.pkb-sec:first-of-type{border-top:none}
+.pkb-sec h4{margin:0 0 2px;font-size:.85rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pkb-sec .pkb-desc{font-size:.7rem;color:var(--muted);margin:0 0 8px}
+.pkb-item{display:flex;gap:8px;align-items:flex-start;background:var(--paper);border:1px solid var(--line);border-radius:7px;padding:8px 10px;margin:6px 0;font-size:.8rem;line-height:1.6}
+.pkb-item span{flex:1;min-width:0;word-break:break-word}
+.pkb-x{margin-left:auto;border:none;background:none;color:var(--muted);cursor:pointer;font-size:.9rem;flex:none;padding:0 2px}
+.pkb-add{display:flex;gap:8px;margin:6px 0}
+.pkb-add input{flex:1;border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:.82rem;font-family:inherit;background:var(--paper)}
+.pkb-add button{border:1px solid var(--green-deep);background:var(--green-deep);color:#FBF9F2;border-radius:7px;padding:0 14px;cursor:pointer;font-size:.9rem;font-family:inherit}
+
+/* ---------- roadmap / about ---------- */
+.rm{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px dashed var(--line)}
+.rm:last-child{border:none}
+.rm .ic{
+  width:34px;height:34px;border-radius:8px;background:var(--green-soft);color:var(--green-deep);
+  display:flex;align-items:center;justify-content:center;flex:none;font-size:.95rem;
+}
+.rm b{font-size:.88rem;display:block}
+.rm small{color:var(--muted);font-size:.76rem;line-height:1.65;display:block;margin-top:2px}
+.soon{
+  font-size:.6rem;color:var(--muted);border:1px dashed var(--muted);
+  border-radius:3px;padding:0 6px;margin-left:6px;vertical-align:2px;font-weight:650;letter-spacing:.06em;
+}
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.tri div{background:var(--card);border:1px solid var(--line);border-radius:9px;padding:12px 10px;font-size:.72rem;line-height:1.65}
+.tri b{display:block;color:var(--green-deep);font-size:.8rem;margin-bottom:4px;letter-spacing:.03em}
+.principle{
+  border-top:2px solid var(--ink);border-bottom:1px solid var(--line);
+  padding:16px 2px;margin:18px 0;font-size:.9rem;
+}
+.principle em{font-style:normal;border-bottom:3px solid var(--brass-soft);font-weight:750}
+
+/* ---------- footer ---------- */
+footer{margin-top:34px;padding-top:14px;border-top:2px solid var(--ink)}
+footer p{font-size:.68rem;color:var(--muted);margin:5px 0;display:flex;gap:8px;letter-spacing:.02em}
+footer p::before{content:"—";color:var(--brass);font-weight:900}
+
+/* ---------- modal & toast ---------- */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(35,40,31,.45);z-index:50;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--card);width:100%;max-width:560px;border-radius:14px;padding:22px 22px 28px;
+  border-top:3px solid var(--green-deep);margin:20px;
+  animation:mup .25s ease;max-height:88vh;overflow:auto;
+}
+@keyframes mup{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+.modal h3{margin:0 0 4px}
+.modal .close{float:right;border:none;background:none;font-size:1rem;color:var(--muted);cursor:pointer;margin-top:-4px}
+#toast{
+  position:fixed;left:50%;bottom:36px;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:#F6F3EC;font-size:.8rem;border-radius:8px;padding:10px 18px;
+  opacity:0;transition:.3s;z-index:99;pointer-events:none;white-space:nowrap;letter-spacing:.03em;
+}
+#toast.show{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:860px){
+  #app{padding:0 20px 48px}
+  .edit-grid{grid-template-columns:1fr}
+}
+@media (max-width:640px){
+  .notes{grid-template-columns:1fr}
+  .tri{grid-template-columns:1fr}
+  .modal{margin:12px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header>
+  <div class="logo">
+    <h1 class="serif">碎碎念弹药库</h1>
+    <p>把「我有东西想说」变成「原来我也可以讲」</p>
+  </div>
+  <button class="iconbtn" id="btnDemo" title="一键加载黄金示例（真实链路样本）">示例</button>
+  <button class="iconbtn" id="btnSettings" title="AI 设置">设置</button>
+  <span class="ai-status" id="aiStatus" title="点此配置 AI"><span class="dot"></span><span id="aiStatusTxt">演示模式</span></span>
+</header>
+
+<nav class="tabs">
+  <button class="on" data-tab="create">创作流水线</button>
+  <button data-tab="kb">知识库</button>
+  <button data-tab="roadmap">Roadmap</button>
+  <button data-tab="about">原则</button>
+</nav>
+
+<!-- ============ TAB: 创作 ============ -->
+<div id="tab-create">
+  <div class="stages">
+    <div class="bar"><i id="seg1"></i><i id="seg2"></i><i id="seg3"></i></div>
+    <div class="labels">
+      <span id="lab1" class="on">① 素材系统 · 认识你</span>
+      <span id="lab2">② 选题系统 · 找痛点</span>
+      <span id="lab3">③ 内容系统 · 一起写</span>
+    </div>
+  </div>
+
+  <div class="flow">
+  <!-- ===== STEP 1 素材系统 ===== -->
+  <section id="step1">
+    <div class="card">
+      <span class="stamp">素材系统 · 你写过的东西</span>
+      <h3>日志 / 文章</h3>
+      <p class="hint">粘贴 2~3 篇你真实写过的东西：日记、朋友圈长文、读书笔记都行。不用整理，丢进来就好。</p>
+      <textarea class="f" id="journals" rows="5" placeholder="把你的日志粘到这里……"></textarea>
+    </div>
+
+    <div class="card">
+      <span class="stamp">素材系统 · 你最近在想什么</span>
+      <h3>灵感便签 · 一 / 二 / 三</h3>
+      <p class="hint">一句话就行。灵感不是用来「写好」的，是用来「留住」的。</p>
+      <div class="notes">
+        <div class="note" id="n1"><b>便签一</b><textarea placeholder="睡前想到的点子……"></textarea></div>
+        <div class="note" id="n2"><b>便签二</b><textarea placeholder="今天注意到的一件小事……"></textarea></div>
+        <div class="note" id="n3"><b>便签三</b><textarea placeholder="突然想说的一句话……"></textarea></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="stamp">素材系统 · 完全可选</span>
+      <details id="hdDetails">
+        <summary>人类图（可选 · 不填不影响）</summary>
+        <p class="caution">先说清楚：人类图偏玄学，没有严谨的科学依据，别用测出来的结果定义自己，也别让它困住你的方向和选择。测完觉得「贴切」就填进来当个了解自己的参考；觉得不贴切，直接忽略这一 part 就好。AI 分析以你自己写的内容为主，人类图只作次要参考。</p>
+        <label class="f">能量类型</label>
+        <select class="f" id="hd-type">
+          <option value="">选择…</option>
+          <option>显示者</option><option>生产者</option><option>显示生产者</option><option>投射者</option><option>反映者</option>
+        </select>
+        <label class="f">内在权威</label>
+        <input class="f" id="hd-auth" placeholder="如：直觉型权威">
+        <label class="f">人生角色</label>
+        <input class="f" id="hd-role" placeholder="如：1/4">
+        <label class="f">天赋才华 / 通道（可选）</label>
+        <input class="f" id="hd-talent" placeholder="如：18-58 研究+链接">
+        <p class="hint" style="margin:10px 0 0">想测可以 <a class="link" href="https://humandesign.org.cn/human-design/" target="_blank" rel="noopener">去免费测试</a>（输入阳历生日和出生地），测完再决定要不要填回来。</p>
+      </details>
+    </div>
+
+    <button class="btn" id="btnScreen">AI，筛一轮我的碎碎念 →</button>
+    <p class="counter" id="mat-count"></p>
+  </section>
+
+  <div class="ai-wait" id="wait1"><div class="eye"></div><p>AI 正在读你……<br>从碎碎念里找「别人也会关心的问题」</p></div>
+
+  <!-- ===== STEP 2 素材 × 选题：观点 + 手动验证 ===== -->
+  <section id="step2" hidden>
+    <div class="card">
+      <span class="stamp">素材系统 ✕ 选题系统</span>
+      <h3>AI 发现了三个值得表达的观点</h3>
+      <p class="hint">这些不是「AI 写的文案」，是从你自己的记录里长出来的。选一个你最想讲的。</p>
+      <div id="vps"></div>
+    </div>
+
+    <div class="card" id="vpVerifyCard" hidden>
+      <div class="verify">
+        <h4>手动验证一下——这一步是你的</h4>
+        <p>选题系统里，「刷爆款」是人的动作，AI 只递工具。复制下面的词，去小红书搜<b>近 1~2 个月</b>：还有没有相似的高互动内容？评论区都在问什么？缺口在哪？</p>
+        <div class="kw" id="vp-kws"></div>
+        <label class="checkline"><input type="checkbox" id="verified"><span>我搜过了，这个方向近期确实有人关注（或热度不高但我确认想做）</span></label>
+      </div>
+    </div>
+
+    <button class="btn" id="btnFission" disabled>把选中观点裂变成痛点 →</button>
+  </section>
+
+  <div class="ai-wait" id="wait2"><div class="eye"></div><p>AI 正在裂变痛点……<br>一个大痛点 → 一串观众真正关心的小问题</p></div>
+
+  <!-- ===== STEP 3 选题系统：痛点 + 骨架 + 拆解 ===== -->
+  <section id="step3" hidden>
+    <div class="card">
+      <span class="stamp">选题系统 · 大家想听的</span>
+      <h3>裂变出的痛点</h3>
+      <p class="hint">选题 = 一个大痛点。选 <b style="color:var(--green-deep)">一个核心</b>（墨绿）+ <b style="color:var(--brass)">两个辅助</b>（黄铜），确定这篇内容帮谁、解决什么问题。</p>
+      <div id="pps"></div>
+      <p class="counter" id="pp-count"></p>
+    </div>
+
+    <div class="card">
+      <span class="stamp">选题系统 · 选一种表达结构</span>
+      <h3>这一步就定了「爱听的方式」</h3>
+      <p class="hint">内置了四种抽象结构，你不用自带任何对标脚本，也能直接用。选最像你的那一个。</p>
+      <div id="structs"></div>
+      <div class="struct-divider">进阶框架（实验 · 可选）</div>
+      <div id="structs-adv"></div>
+    </div>
+
+    <div class="card">
+      <details id="tearDetails">
+        <summary>想拆一篇你刷到的爆款？（可选 · 当学习资料）</summary>
+        <p class="hint" style="margin-top:10px">洗稿是抄句子，拆解是学结构。AI 会拆出「它帮谁解决了什么问题、为什么好、哪里能学不能抄」，而不是给你复制它的原句。</p>
+        <textarea class="f" id="tearInput" rows="3" placeholder="把爆款笔记的文案粘到这里……"></textarea>
+        <button class="btn sm" id="btnTear">拆解这篇爆款</button>
+        <div class="td-res" id="tearRes" hidden></div>
+      </details>
+    </div>
+
+    <button class="btn" id="btnCreate" disabled>开始创作 →</button>
+  </section>
+  </div><!-- /flow -->
+
+  <!-- ===== STEP 4 内容系统：口喷 → 草稿 → 多轮修改 ===== -->
+  <section id="step4" hidden>
+    <div class="card" style="max-width:760px;margin-left:auto;margin-right:auto">
+      <span class="stamp">内容系统 · 爱听的方式</span>
+      <h3>对着骨架，把你的内容「口喷」出来</h3>
+      <p class="hint">按下面的框架分段喷，每段上方有参考表达；不用写完整，像跟朋友聊天一样说就行。AI 会帮你搭成一篇完整的稿子。</p>
+      <div class="spit-toggle" id="spitToggle">觉得死框架限制发挥或表达？点这里切换空白大框随意发挥 →</div>
+      <div id="spitFrameWrap"></div>
+      <div id="spitBlankWrap" hidden>
+        <textarea class="f" id="spitInput" rows="7" placeholder="把你想说的整段喷出来，想到哪说到哪……"></textarea>
+      </div>
+      <button class="btn" id="btnSpit">基于骨架 + 我的口喷，出完整草稿 →</button>
+    </div>
+
+    <div class="ai-wait" id="wait3"><div class="eye"></div><p>AI 正在把你的口喷整理成完整口播稿……<br>记住：它写的是草稿，终稿永远是你的</p></div>
+
+    <div class="edit-grid" id="editCol" hidden>
+      <div>
+        <div class="card">
+          <span class="stamp">内容系统 · 草稿</span>
+          <h3>口播草稿<span class="badge-draft">草 稿</span></h3>
+          <p class="hint">点任意一段就「引用」它，去右边让 AI 针对性修改；改好的版本一键替换回原稿。</p>
+          <div id="draftSegs"></div>
+          <button class="btn ghost sm" id="btnCopy">复制整篇草稿</button>
+        </div>
+      </div>
+      <div>
+        <div class="card">
+          <span class="stamp">内容系统 · 引用提问</span>
+          <h3>跟 AI 一来一回改</h3>
+          <div class="quote-bar" id="quoteBar" hidden>正在引用第 <b id="quoteSegNo">—</b> 段</div>
+          <textarea class="f" id="askInput" rows="2" placeholder="针对这段说点什么：太抽象了，帮我换成具体画面……"></textarea>
+          <button class="btn sm" id="btnAsk">问 AI 怎么改这段 →</button>
+          <div id="rounds"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ TAB: knowledge base ============ -->
+<div id="tab-kb" hidden>
+  <div class="card">
+    <span class="stamp">知识库 · 九模块（FemAI 课程提炼）</span>
+    <h3>AI 产出的背后是一套方法</h3>
+    <p class="hint">下面每一条都来自被真实使用过的方法论（FemAI 课程与分享），我们把它提炼成「提示词级」的知识卡，注入到创作流水线对应的环节。AI 换代没关系，方法沉淀在这里。</p>
+    <div class="kb-mod">
+      <div class="kb-head"><b>爆款铁三角 · 三系统</b><span class="kb-src">发疯姥子方法论</span></div>
+      <p class="kb-one">爆款 = 大家想听的话题 × 自己的东西 × 爱听的方式，三缺一不可。</p>
+      <p class="kb-use">生效于 <em>全线</em> · 产品的世界观</p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>痛点裂变实操</b><span class="kb-src">发疯姥子方法论</span></div>
+      <p class="kb-one">把自己当观众来定义选题，裂变成一串能对号入座的小痛点。</p>
+      <p class="kb-use">生效于 <em>② 选题系统 · 裂变</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>商业三重筛选</b><span class="kb-src">小星球《商业 + AI》</span></div>
+      <p class="kb-one">真需求三问：真实存在吗？频率高吗？不解决有损失吗？</p>
+      <p class="kb-use">生效于 <em>② 选题系统 · 裂变排序</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>爆款拆解法</b><span class="kb-src">发疯姥子 × 谷雨·对标库</span></div>
+      <p class="kb-one">看到爆款就问：这篇帮谁解决了什么问题、提供了什么价值、它为什么好。</p>
+      <p class="kb-use">生效于 <em>② 选题系统 · 拆解对标</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>上下文注入</b><span class="kb-src">雷雷《本人使用说明书》</span></div>
+      <p class="kb-one">Prompt 不是指令，是把你这个人塞进 AI 的脑子；已知事实与推测判断分开，不许编造。</p>
+      <p class="kb-use">生效于 <em>① 素材系统 · 观点发现</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>43 题定位框架</b><span class="kb-src">FemAI 定位问卷</span></div>
+      <p class="kb-one">八个维度评估素材：持续投入过什么、被请教什么、做成过什么、没收入也愿意研究什么。</p>
+      <p class="kb-use">生效于 <em>① 素材系统 · 观点发现</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>风格库 · 去 AI 味</b><span class="kb-src">谷雨·风格库 × Humanizer 思路</span></div>
+      <p class="kb-one">你是谁、你平时怎么说话、绝不出现的词——写作时照单全收。</p>
+      <p class="kb-use">生效于 <em>③ 内容系统 · 草稿与修改建议</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>口播优先</b><span class="kb-src">nino《自媒体分享》</span></div>
+      <p class="kb-one">口播是新手最易上手的形式：短句、说人话、句句解决具体问题。</p>
+      <p class="kb-use">生效于 <em>③ 内容系统 · 草稿</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>AI-Native 原则</b><span class="kb-src">八两《AI-Native 工作流》</span></div>
+      <p class="kb-one">别问每一步怎么交给 AI，问：如果 AI 一开始就存在，流程该长什么样。</p>
+      <p class="kb-use">生效于 <em>产品设计本身</em></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="stamp">知识库 · 凯莉内容系统（个人版）</span>
+    <h3>凯莉亲手打磨的六张卡</h3>
+    <p class="hint">这是凯莉自己的内容系统，从她的真实账号里长出来。定位、评分、骨架、大切口、对标节奏、复盘——六张卡，接到流水线对应的环节。</p>
+    <div class="kb-mod">
+      <div class="kb-head"><b>账号定位与语气</b><span class="kb-src">positioning-and-voice</span></div>
+      <p class="kb-one">三条内容支柱：求职干货 / 主题 Vlog / 城市攻略；保留「其实、真的、对吧」式的原话。</p>
+      <p class="kb-use">生效于 <em>① 素材系统 · 观点发现</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>五维评分</b><span class="kb-src">topic-system</span></div>
+      <p class="kb-one">痛点强度 / 受众广度 / 个人独特性 / 账号匹配度 / 可执行价值，每项 0-2 总分 10。</p>
+      <p class="kb-use">生效于 <em>① 观点发现 + ② 裂变排序</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>公共版四骨架</b><span class="kb-src">product-content-system</span></div>
+      <p class="kb-one">个人经历→发现问题→方法分享 等四个通用口播骨架，公共产品默认选项。</p>
+      <p class="kb-use">生效于 <em>③ 内容系统 · 选骨架</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>大切口干货系统</b><span class="kb-src">big-topic-script-system</span></div>
+      <p class="kb-one">全民情绪敲门 → 鲜明判断 → 经历证明 → 像素级实操 → 温柔托底。</p>
+      <p class="kb-use">生效于 <em>③ 内容系统 · 大题放大</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>仙贝小鱼节奏</b><span class="kb-src">xianbei-patterns</span></div>
+      <p class="kb-one">只学结构与运营方法：态度开场 → 反常识判断 → 翻译成人话 → 预告系列。</p>
+      <p class="kb-use">生效于 <em>② 拆解对标 + ③ 写草稿</em></p>
+    </div>
+    <div class="kb-mod">
+      <div class="kb-head"><b>发布复盘回路</b><span class="kb-src">review-loop</span></div>
+      <p class="kb-one">点击低查选题包装，收藏低查方法，评论提问转下一篇。</p>
+      <p class="kb-use">生效于 <em>Roadmap · 发布复盘回填</em></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="stamp">知识库 · 我的经验库</span>
+    <h3>把你自己的经验沉淀下来</h3>
+    <p class="hint">你在创作里踩过的坑、管用的招，随手记在这里，按四个板块归档。用着用着，这就是你自己的方法论。</p>
+    <div id="pkb"></div>
+  </div>
+</div>
+
+<!-- ============ TAB: roadmap ============ -->
+<div id="tab-roadmap" hidden>
+  <div class="card">
+    <span class="stamp">Roadmap</span>
+    <h3>规划中<span class="soon" style="margin-left:8px">明示画饼 · 绝不放假按钮</span></h3>
+    <p class="hint">以下是未来版本的方向。现在一个都还没做——我们不想用「看起来能用」的按钮骗你。</p>
+    <div class="rm"><span class="ic">复</span><div><b>发布复盘回填</b><small>发布后填回浏览和点赞数据，验证「哪些碎碎念真的打动了人」，反哺素材系统</small></div></div>
+    <div class="rm"><span class="ic">随</span><div><b>小程序版本</b><small>微信里随手记，碎碎念直接长进弹药库</small></div></div>
+    <div class="rm"><span class="ic">导</span><div><b>导出 Obsidian / 本地 Markdown</b><small>你的数据永远可以带走</small></div></div>
+    <div class="rm"><span class="ic">播</span><div><b>口播录制清单 + AI 剪辑对接</b><small>10 分钟录制 + 30 分钟剪辑的完整链路</small></div></div>
+    <div class="rm"><span class="ic">群</span><div><b>社群共学</b><small>共学营姐妹互相当「朋友圈点赞验证」的第一批观众</small></div></div>
+  </div>
+</div>
+
+<!-- ============ TAB: about ============ -->
+<div id="tab-about" hidden>
+  <div class="principle serif">
+    爆款只有一句底层逻辑：在<em>大家想听的话题</em>下，用<em>大家爱听的方式</em>，表达<em>你独有的经历和观点</em>。三缺一，就不出爆款。
+  </div>
+  <div class="tri">
+    <div><b>① 素材系统</b>你独有的东西。输入生活碎片，输出发自内心的表达。</div>
+    <div><b>② 选题系统</b>大家想听的。裂变痛点，手动验证热度。</div>
+    <div><b>③ 内容系统</b>爱听的方式。AI 搭台你唱戏，终稿是你的。</div>
+  </div>
+  <div class="card">
+    <span class="stamp">AI 在这里的位置</span>
+    <p style="font-size:.85rem;margin:4px 0 0">AI 干四种活：裂变痛点、评估素材、搭框架、给修改建议。<br>但每个 AI 产出都带 <span class="badge-draft">草 稿</span> 角标——最后一稿的品位，永远是人。</p>
+  </div>
+  <div class="card">
+    <span class="stamp">你的数据只在你手里</span>
+    <p style="font-size:.85rem;margin:4px 0 0">日志、灵感、定位卡、风格卡、我的经验库，以及你填的 API Key，全部只存在<b>你自己的浏览器本地</b>（localStorage）。本产品没有服务器、不保存你的任何数据。唯一例外：当你主动接入 AI 时，本次输入会发送给你自己选的服务商（DeepSeek / GLM 等）去生成结果——这也只在你填了 API Key 之后才会发生。</p>
+  </div>
+  <div class="card">
+    <span class="stamp">团队</span>
+    <p style="font-size:.85rem;margin:4px 0 0">Purple · 架构方法论 + AI 产出<br>凯莉酱酱ྀི · 真实体验 + 主讲<br>首批种子用户：FemAI 共学营的姐妹们</p>
+  </div>
+</div>
+
+<footer>
+  <p>AI 生成内容主动打标，合规不影响流量</p>
+  <p>人类图缺乏严谨科学依据，测出来不贴切就别管它，别被结果困住</p>
+  <p>你的数据只存在你自己的浏览器里</p>
+</footer>
+</div>
+
+<!-- settings modal -->
+<div class="modal-bg" id="modalSettings">
+  <div class="modal">
+    <button class="close" data-close>✕</button>
+    <h3>AI 设置（可选）</h3>
+    <p style="font-size:.78rem;color:var(--muted);margin:4px 0 12px">不填也能用：页面内置演示数据（真实链路样本）。填了自己的 API Key，AI 就真的开始读你。Key 只存在你的浏览器，不经过我们。</p>
+    <label class="f">服务商（多家 OpenAI 兼容模型）</label>
+    <select class="f" id="ai-provider">
+      <option value="">演示模式（内置数据）</option>
+      <option value="deepseek">DeepSeek</option>
+      <option value="glm">智谱 GLM</option>
+      <option value="moonshot">Kimi · 月之暗面</option>
+      <option value="qwen">通义千问 · 阿里云百炼</option>
+      <option value="doubao">豆包 · 火山方舟</option>
+      <option value="openai">OpenAI</option>
+      <option value="siliconflow">硅基流动 SiliconFlow</option>
+    </select>
+    <div class="provider-site" id="providerSite" hidden>
+      <b id="siteName"></b>
+      <a id="siteLink" href="#" target="_blank" rel="noopener"></a>
+      <p id="siteHint"></p>
+    </div>
+    <label class="f">模型名称（可选 · 默认已填好）</label>
+    <input class="f" id="ai-model" type="text" placeholder="如 deepseek-chat">
+    <label class="f">API Key</label>
+    <input class="f" id="ai-key" type="password" placeholder="sk-…">
+    <label class="f">定位卡 · 账号主轴与内容支柱（可选）</label>
+    <textarea class="f" id="style-position" rows="2" placeholder="你这条账号在讲什么？比如：时尚打工人的职业成长与城市生活……"></textarea>
+    <label class="f">风格卡 · 口头禅与语气（可选）</label>
+    <textarea class="f" id="style-tone" rows="2" placeholder="你惯用的口头禅、语气、说话习惯……"></textarea>
+    <label class="f">风格卡 · 禁词（逗号分隔）</label>
+    <input class="f" id="style-ban" type="text" placeholder="家人们, 绝绝子, 狠狠">
+    <button class="btn sm" id="btnSaveSettings">保存</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ================= state ================= */
+const S = {
+  tab:'create', stage:0,
+  viewpoints:[], vpSel:-1, verified:false,
+  painpoints:[], core:-1, aux:[],
+  structSel:-1,
+  spit:'', spitMode:'frame', spitFrame:{sel:-1,vals:[]},
+  draft:'', segs:[], quoteSeg:-1,
+  rounds:[], roundId:0,
+  pkb:{mat:[],top:[],con:[],rev:[]}
+};
+const $ = s=>document.querySelector(s);
+const $$ = s=>document.querySelectorAll(s);
+const el = id=>document.getElementById(id);
+const esc = s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function toast(msg){const t=el('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2200);}
+
+function save(){try{localStorage.setItem('suisuinian',JSON.stringify({
+  hd:[el('hd-type').value,el('hd-auth').value,el('hd-role').value,el('hd-talent').value],
+  journals:el('journals').value,
+  notes:[...$$('.note textarea')].map(t=>t.value),
+  ai:{p:el('ai-provider').value,k:el('ai-key').value,m:el('ai-model').value},
+  style:{p:el('style-position').value,t:el('style-tone').value,b:el('style-ban').value},
+  spit:el('spitInput').value,
+  spitMode:S.spitMode,
+  spitFrame:S.spitFrame,
+  pkb:S.pkb
+}))}catch(e){}}
+function restore(){try{
+  const d=JSON.parse(localStorage.getItem('suisuinian')||'null');if(!d)return;
+  [el('hd-type'),el('hd-auth'),el('hd-role'),el('hd-talent')].forEach((x,i)=>x.value=d.hd[i]||'');
+  if(d.hd&&d.hd.some(x=>x))el('hdDetails').open=true;
+  el('journals').value=d.journals||'';
+  $$('.note textarea').forEach((t,i)=>t.value=d.notes[i]||'');
+  if(d.ai){el('ai-provider').value=d.ai.p;el('ai-key').value=d.ai.k||'';el('ai-model').value=d.ai.m||'';}
+  if(d.style){el('style-position').value=d.style.p||'';el('style-tone').value=d.style.t||'';el('style-ban').value=d.style.b||'';}
+  el('spitInput').value=d.spit||'';
+  if(d.spitMode)S.spitMode=d.spitMode;
+  if(d.spitFrame)S.spitFrame=d.spitFrame;
+  if(d.pkb)S.pkb=Object.assign({mat:[],top:[],con:[],rev:[]},d.pkb);
+  refreshNotes();
+}catch(e){}}
+
+/* ================= tabs ================= */
+$$('.tabs button').forEach(b=>b.onclick=()=>{
+  $$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  ['create','kb','roadmap','about'].forEach(t=>el('tab-'+t).hidden=(t!==b.dataset.tab));
+  if(b.dataset.tab==='kb')renderPkb();
+});
+
+/* ================= stage bar ================= */
+function setStage(n){
+  S.stage=n;
+  [1,2,3].forEach(i=>{
+    el('seg'+i).className = i<n?'done':(i===n?'cur':'');
+    el('lab'+i).classList.toggle('on',i<=n);
+  });
+}
+
+/* ================= notes state ================= */
+function refreshNotes(){
+  $$('.note').forEach(n=>{
+    const has=[...n.querySelectorAll('textarea')].some(t=>t.value.trim());
+    n.classList.toggle('filled',has);
+  });
+  const filled=[...$$('.note textarea')].filter(t=>t.value.trim()).length;
+  const j=el('journals').value.trim();
+  el('mat-count').innerHTML = (j||filled)>0
+    ? `弹药入库：便签 ×<b>${filled}</b> · ${j?'日志已就位':'待贴日志'}（人类图可选，不填不影响）`
+    : '空仓状态：先随便丢点东西进来，不用整理';
+}
+$$('.note textarea').forEach(t=>t.addEventListener('input',()=>{refreshNotes();save();}));
+el('journals').addEventListener('input',()=>{refreshNotes();save();});
+['hd-type','hd-auth','hd-role','hd-talent'].forEach(id=>el(id).addEventListener('change',save));
+['style-position','style-tone','style-ban'].forEach(id=>el(id).addEventListener('input',save));
+
+/* ================= golden sample ================= */
+const GOLD = {
+  hd:['投射者','直觉型权威','1/4','18-58 · 研究+链接'],
+  journals:`最近一直在想一个问题：我到底适不适合「正经地写东西」。
+每次打开备忘录想认真记录，就觉得任务好重——要写清楚背景、要有趣、要完整。想着想着就放下了，过几个小时连当时想说什么都忘了。
+反而是朋友圈里随手发的两句吐槽，点赞比我还认真写的长文多。这让我怀疑，是不是我对「记录」这件事的理解从一开始就错了。`,
+  notes:[
+    '灵感来得快走得也快，睡前想到的点子早上就没了',
+    '讨厌「正经地写」，喜欢随手发',
+    '朋友圈随手写的，总比正经文章更多人点赞'
+  ],
+  style:{position:'时尚打工人的职业成长与城市生活 · 三条内容支柱：求职干货 / 主题 Vlog / 城市攻略',tone:'像朋友聊天，常用「其实」「真的」「对吧」，先讲经历再总结，干货里带姐姐式提醒',ban:'狠狠拿捏, 普通人逆袭, 家人们, 绝绝子'}
+};
+el('btnDemo').onclick=()=>{
+  [el('hd-type'),el('hd-auth'),el('hd-role'),el('hd-talent')].forEach((x,i)=>x.value=GOLD.hd[i]);
+  el('journals').value=GOLD.journals;
+  $$('.note textarea').forEach((t,i)=>t.value=GOLD.notes[i]);
+  el('style-position').value=GOLD.style.position;
+  el('style-tone').value=GOLD.style.tone;
+  el('style-ban').value=GOLD.style.ban;
+  refreshNotes();save();
+  toast('黄金示例已加载 · 这是真实链路样本');
+};
+
+/* ================= knowledge base =================
+   九份 FemAI 课程 + 凯莉个人内容系统，提炼成「提示词级」知识卡，
+   在对应调用点通过 buildSys() 注入 system prompt。 */
+const KB = {
+  tri:{ frag:'爆款底层逻辑：在大家想听的话题下，用大家爱听的方式，表达独有的人生经历和观点，三缺一不可。选题=一个大痛点；一篇好文案的唯一标准：有没有帮观众解决具体问题、提供价值。'},
+  fission:{ frag:'痛点裂变方法：把选题当作一个观众来定义（例：「如何找到天赋并赚到钱」），拆成观众真正关心的小问题：1.痛点到底是什么？2.具体怎么做、有没有实操？3.做到之后怎么变成钱？裂变出的每个小痛点都要具体到能让读者对号入座；优先推荐用户有真实素材可以填充的痛点。'},
+  biz:{ frag:'用三重筛选评估每个痛点：这个问题真实存在吗？发生频率高吗？不解决会产生损失吗？用户以前有没有为类似方案付费过？只把通过筛选的痛点排在前面。'},
+  tear:{ frag:'拆解对标内容时回答四个问题：这篇笔记帮谁解决了什么问题？提供了什么价值？它为什么好（从钩子、结构、情绪、具体性四方面看）？哪一点可以被学习但不可以被抄袭？'},
+  ctx:{ frag:'分析用户素材时的纪律：把「用户明确提供的经历」和「你的推测判断」分开表述；不许编造用户没有提供的经历；信息不足时输出保守结论并说明。分析必须以上下文里用户明确输入的内容（日志、灵感、定位卡、风格卡）为主。人类图是缺乏严谨科学依据的自我观察框架，仅作次要参考——用户未填写就完全忽略；即使用户填写，也只作了解性参考，不要用它下结论、不要把人框进类型标签。'},
+  quiz:{ frag:'用定位问卷的维度评估素材价值：过去五年持续投入一年以上的事；别人最常向用户请教什么；做成过什么、结果如何；哪些话题即使没有收入也愿意持续研究；哪一类人的处境是用户真正了解的。命中维度越多的观点，越值得推荐。'},
+  style:{ frag:'写作纪律：遵守用户风格卡（口头禅与语气照用，禁词一个不许出现）。避免典型 AI 腔：堆形容词、空洞排比和口号、「家人们」「绝绝子」式套话、强行升华的结尾。像跟一个具体的朋友讲话，多用短句和具体名词，少用抽象大词。'},
+  oral:{ frag:'产出为口播稿：口语、短句、说人话。每一段都必须在解决观众的具体问题——不跑题（每部分围绕核心痛点）、句句有用（都是干货）、讲到心坎上（是观众期待的内容）。先想清楚「为什么讲」再动笔。'},
+  native:{ frag:'AI-Native 原则：不要问「这一步怎么交给 AI」，要问「如果 AI 从一开始就存在，这个流程应该长什么样」。把人从机械劳动里解放出来，把判断权和最终表达留给人。'},
+  position:{ frag:'账号定位纪律：先读用户【定位卡】，判断这条内容属于用户自己的哪根内容支柱，再动笔；语言照用户【风格卡】的口头禅与语气写，保留原话，删除连续重复与绕句；避免整齐对仗的营销话术、夸大焦虑、网感套话。'},
+  score:{ frag:'五维评分（每项 0-2，总分 10）：痛点强度、受众广度、个人独特性、账号匹配度、可执行价值。8-10 优先制作；6-7 补充经历或方案；0-5 暂存。按总分排序推荐，不机械堆数量。'},
+  frame4:{ frag:'默认通用口播骨架四选一：①个人经历→发现问题→方法分享；②普遍困惑→我的案例→解决方案；③反常识观点→真实经历→具体建议；④痛点拆解→逐个解决→总结观点。只学抽象结构，不复制博主原句、人设、经历。'},
+  bigtopic:{ frag:'大切口干货主线：全民情绪敲门→一个鲜明判断→个人经历证明→像素级实操→温柔托底与系列承接。先让观众觉得「你在说我」，再给判断，最后才进方法；每个方法做到像素级（去哪里/看什么/怎么做/怎么判断/踩什么坑）；用主线锁固定全民情绪、核心判断、个人证据、实际结果，跑题内容移入「偏题停车场」。'},
+  xianbei:{ frag:'干货节奏参考（只学结构不抄原句）：有态度的画面开场→说清目标人群与价值→简短可信背书→先反常识判断再给做法→把专业概念翻译成人话→每个方法配真实场景→穿插安抚→结尾回到人设并预告系列。'},
+  review:{ frag:'发布复盘诊断顺序：点击低查选题/标题/封面；点击高观看短查开头铺垫与兑现；收藏低查是否只有观点没有步骤；收藏高涨粉低查人设与系列预期；评论集中提问转成下一条。复盘只输出最有效一点、最可能瓶颈、下一条保留什么、只改什么、可延伸选题。'}
+};
+function buildSys(role,...mods){
+  return role + '\n\n' + mods.map(m=>KB[m].frag).join('\n');
+}
+
+/* ================= demo AI data ================= */
+const DEMO_VPS=[
+  {t:'你不是没有灵感，是记录的门槛太高',
+   src:'来源：便签一 + 日志第 2 段',who:'想做复盘和记录的成长型选手',
+   pain:4,expr:5,stars:5,
+   chips:['情绪共鸣强','有真实数据','新手友好'],
+   kws:['灵感记录','随手记','低负担记录','flomo 平替','复盘方法']},
+  {t:'随手发比正经写更打动人',
+   src:'来源：便签三 + 日志第 3 段（点赞验证）',who:'开了号但总觉得自己写不好的新手',
+   pain:3,expr:4,stars:4,
+   chips:['反常识','易传播','朋友圈可验证'],
+   kws:['朋友圈文案','表达欲','写作心理','不敢发']},
+  {t:'想到却说不出？口播前的三分钟整理法',
+   src:'来源：日志第 1 段',who:'想做口播但打开镜头就卡壳的人',
+   pain:3,expr:3,stars:3,
+   chips:['实操型','适合口播','可系列化'],
+   kws:['口播技巧','即兴表达','内容组织','镜头恐惧']}
+];
+const DEMO_PPS=[
+  {t:'想记录和复盘，但一想到要写得完整就立刻放弃',d:'最核心：完整感的执念直接杀死表达欲'},
+  {t:'语音转文字之后依然混乱，更不想整理了',d:'工具没解决「结构压力」'},
+  {t:'记录了很多，却看不见自己的变化',d:'缺复盘闭环，记录变成安慰剂'},
+  {t:'灵感总出现在不方便的时候：通勤、睡前、洗澡',d:'捕获时机错位'},
+  {t:'收藏夹吃灰：存了 = 学了的心理安慰',d:'伪输入，和伪记录同源'},
+  {t:'别人日更看起来轻松，自己连周更都难',d:'对比产生的行动瘫痪'},
+  {t:'写东西总觉得「不够好」，不敢发出去',d:'完美主义 + 怕被评价'},
+  {t:'复盘流于形式，写完再也不看第二眼',d:'缺少「回头看」的钩子'},
+  {t:'想把记录变成内容，但不知道哪条值得写',d:'选题判断力缺失——正是本产品要解决的'}
+];
+const DEMO_STRUCTS_ALL=[
+  {t:'① 个人经历 → 发现问题 → 方法分享',d:'先讲一段真实经历，引出问题，再给方法。最适合首发，共鸣拉满。'},
+  {t:'② 普遍困惑 → 我的案例 → 解决方案',d:'先说大家共同的困惑，用「我」的案例接住，再落到方案。适合建立信任。'},
+  {t:'③ 反常识观点 → 真实经历 → 具体建议',d:'抛一个反常识判断，用真实经历证明，再给具体建议。适合立人设。'},
+  {t:'④ 痛点拆解 → 逐个解决 → 总结观点',d:'把痛点拆开逐个击破，最后收拢成一个观点。适合清单式口播。'},
+  {t:'⑤ 大切口干货 · 全民情绪 → 判断 → 经历 → 实操 → 托底',d:'受众最广的深度干货主线，适合「法学怎么进时尚行业」这类可以放大的大题。'},
+  {t:'⑥ 快问快答 · 先抛问题 → 三个反常识答案',d:'适合「XX 的三个真相」这类节奏快、易记忆的短视频口播。'}
+];
+/* 每个骨架对应的分段口喷框：标题 + 参考表达（只给关键词，框内留空让用户口喷） */
+const STRUCT_SECTIONS=[
+  [{k:'个人经历',h:'真实经历：什么时间、什么场景、发生了什么，越具体越好'},
+   {k:'发现问题',h:'这段经历里暴露出来的问题 / 矛盾是什么'},
+   {k:'方法分享',h:'你怎么解决的，或给读者的具体步骤（第一步做什么…）'}],
+  [{k:'普遍困惑',h:'大家共同的困惑：谁都会有、又不好意思说出口的那种'},
+   {k:'我的案例',h:'我是怎么遇到 / 怎么踩坑的，一个具体例子'},
+   {k:'解决方案',h:'落到能照着做的步骤，别只说感受'}],
+  [{k:'反常识观点',h:'抛一个反常识判断：大家以为 A，其实 B'},
+   {k:'真实经历',h:'用你自己的真实经历证明这个判断'},
+   {k:'具体建议',h:'基于这个判断，给 2-3 条落地建议'}],
+  [{k:'痛点拆解',h:'把核心痛点拆成 2-3 个小问题'},
+   {k:'逐个解决',h:'每个小问题分别怎么解决，一个一个来'},
+   {k:'总结观点',h:'收拢成一句话的观点，让人记得住'}],
+  [{k:'全民情绪敲门',h:'一句话戳中大多数人都有的情绪 / 处境'},
+   {k:'一个鲜明判断',h:'给出你明确的判断，不骑墙'},
+   {k:'个人经历证明',h:'用你的经历证明这个判断'},
+   {k:'像素级实操',h:'具体到去哪里 / 看什么 / 怎么做 / 怎么判断 / 避什么坑'},
+   {k:'温柔托底与承接',h:'不放大焦虑，收个尾，预告下一条'}],
+  [{k:'先抛问题',h:'用一个大家都会点头的问题开场'},
+   {k:'答案一',h:'第一个反常识答案 + 一句解释'},
+   {k:'答案二',h:'第二个反常识答案 + 一句解释'},
+   {k:'答案三',h:'第三个反常识答案 + 一句解释'}]
+];
+const DEMO_SPIT=`其实我每天脑子里想法特别多，通勤路上、洗澡的时候、睡前，都会冒出来一两个。但每次想认真记下来，一打开备忘录就开始纠结——要写清楚前因后果吧，要写得有意思吧，写完还要分个段吧。纠结着纠结着就关了。过两天连当时想说什么都忘了。
+后来我发现，反而朋友圈随手发的那两句，点赞比我认真写的还多。我就想，是不是我对「记录」这件事的理解从一开始就错了。记录不是写作，记录是留住。所以现在，便签里只写一句话，谁写完整我跟谁急。月底再把这一堆碎碎念丢给 AI，让它帮我看看哪些值得写成内容。`;
+const DEMO_DRAFT=`【钩子】我脑子里每天冒出二十个灵感，昨天一个都没留住。不是因为笨，也不是因为懒——直到我找到真正的原因，我才发现，这事怪不了灵感。
+
+【痛点】你们有没有过这种时刻：通勤路上想到一个特别好的点子，心想晚上记下来。晚上打开备忘录，开始纠结——要不要写清楚背景？要不要写得有趣一点？要不要分个段？纠结着纠结着，把 App 关了。过两天，连当时想说什么都想不起来了。
+
+【转折】我们把「记录」这件事搞反了。问题从来不是你不够自律，是你给记录设的门槛太高了。灵感是用来留住的，不是用来「写好」的。
+
+【方法】后来我做了三件事。第一，便签只允许写一句话，谁写完整我跟谁急。第二，把朋友圈当试验田——随手发出去，点赞就是观众投票，你会发现随手写的比正经写的更打动人。第三，每个月底，把这堆碎碎念丢给 AI，让它帮我找出反复出现的主题——我管这个叫「弹药库」。
+
+【收尾】你不需要更好的笔记软件，你需要更低的开始门槛。评论区留一句你昨天忘掉的灵感，我帮你看看哪句值得写成一篇。`;
+const DEMO_REVISE=`【钩子】周二早上八点，地铁到站前，我突然想到一个特别想说的点。等我掏出手机，到公司一忙，下午再想——那个点已经没了。`;
+const DEMO_TEARDOWN=[
+  {b:'帮谁解决了什么问题',d:'这篇在解决「想记录却总觉得自己写不好」的人，给他们一个「记录可以不完整」的台阶。'},
+  {b:'提供的价值',d:'一个反常识的认知（不是懒，是门槛错）+ 三个立刻能做的动作。'},
+  {b:'它为什么好',d:'钩子用具体画面开场（二十个灵感留不住）；结构是「痛点放大 → 反常识转折 → 三步方法 → 互动收尾」；情绪上是共鸣接焦虑再释然。'},
+  {b:'能学不能抄',d:'可以学「具体画面开场 + 反常识转折」的结构，但不能搬它的原句和完整例子——换成你自己的经历。'}
+];
+
+/* ================= optional real AI ================= */
+const AI_CFG={
+  deepseek:{base:'https://api.deepseek.com',model:'deepseek-chat',name:'DeepSeek',site:'https://platform.deepseek.com/',hint:'注册后创建 API Key，按量付费，新用户常有赠送额度。'},
+  glm:{base:'https://open.bigmodel.cn/api/paas/v4',model:'glm-4-flash',name:'智谱 GLM',site:'https://open.bigmodel.cn/',hint:'注册后开通模型服务，glm-4-flash 免费调用，适合日常使用。'},
+  moonshot:{base:'https://api.moonshot.cn/v1',model:'moonshot-v1-8k',name:'Kimi · 月之暗面',site:'https://platform.moonshot.cn/',hint:'注册后创建 API Key，moonshot-v1-8k 长上下文，适合较长的素材。'},
+  qwen:{base:'https://dashscope.aliyuncs.com/compatible-mode/v1',model:'qwen-plus',name:'通义千问 · 阿里云百炼',site:'https://bailian.console.aliyun.com/',hint:'登录阿里云百炼开通模型，qwen-plus 性价比高，新用户有免费额度。'},
+  doubao:{base:'https://ark.cn-beijing.volces.com/api/v3',model:'doubao-1-5-pro-32k-250115',name:'豆包 · 火山方舟',site:'https://console.volcengine.com/ark',hint:'注册火山引擎并开通方舟模型，模型名也可填你创建的「推理接入点」ID。'},
+  openai:{base:'https://api.openai.com/v1',model:'gpt-4o-mini',name:'OpenAI',site:'https://platform.openai.com/',hint:'需在 OpenAI 平台充值并创建 API Key（国内网络访问可能受限）。'},
+  siliconflow:{base:'https://api.siliconflow.cn/v1',model:'deepseek-ai/DeepSeek-V3',name:'硅基流动 SiliconFlow',site:'https://cloud.siliconflow.cn/',hint:'聚合多家开源模型，注册送额度，可自由切换 DeepSeek / Qwen 等开源模型。'}
+};
+async function askAI(sysPrompt,userPrompt,jsonShape){
+  const p=el('ai-provider').value, key=el('ai-key').value.trim();
+  if(!p||!key) return null; // demo mode
+  const cfg=AI_CFG[p];
+  const model=el('ai-model').value.trim()||cfg.model;
+  try{
+    const r=await fetch(cfg.base+'/chat/completions',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body:JSON.stringify({
+        model,
+        messages:[{role:'system',content:sysPrompt},{role:'user',content:userPrompt}],
+        temperature:0.7
+      })
+    });
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const txt=d.choices[0].message.content;
+    if(!jsonShape) return txt;
+    const m=txt.match(/\{[\s\S]*\}/); return JSON.parse(m?m[0]:txt);
+  }catch(e){
+    toast('AI 调用失败，已回落到演示数据');
+    return null;
+  }
+}
+function materialText(){
+  const notes=[...$$('.note textarea')].filter(t=>t.value.trim()).map(t=>'- '+t.value.trim()).join('\n');
+  const pos=el('style-position').value.trim(), tone=el('style-tone').value.trim(), ban=el('style-ban').value.trim();
+  const style=(pos||tone||ban)?`\n【定位卡】${pos||'未填写'}\n【风格卡】口头禅与语气：${tone||'无'}；禁词：${ban||'无'}`:'';
+  const hdVals=[el('hd-type').value,el('hd-auth').value,el('hd-role').value,el('hd-talent').value].map(v=>v.trim()).filter(Boolean);
+  const hd=hdVals.length?`\n【人类图（可选，仅供参考）】${el('hd-type').value} / ${el('hd-auth').value} / 人生角色 ${el('hd-role').value} / ${el('hd-talent').value}`:'';
+  return `【日志】\n${el('journals').value}\n【灵感】\n${notes}${hd}${style}`;
+}
+
+/* ================= step logic ================= */
+el('btnScreen').onclick=async()=>{
+  const any=el('journals').value.trim()||[...$$('.note textarea')].some(t=>t.value.trim());
+  if(!any){toast('先丢一条碎碎念进来，或点右上角「示例」');return;}
+  el('step1').hidden=true;el('wait1').classList.add('show');setStage(1);
+  const r=await askAI(
+    buildSys('你是小红书选题专家。从用户的真实记录里发现 3 个值得表达的观点，每个观点附 3-5 个可用于手动搜索验证的小红书搜索词。严格输出 JSON：{"viewpoints":[{"t":"观点标题(≤16字)","src":"来源说明","who":"目标人群","pain":1-5,"expr":1-5,"stars":1-5,"chips":["标签"],"kws":["搜索词"]}]}','ctx','quiz','score','position','tri'),
+    materialText(),true);
+  S.viewpoints = (r&&r.viewpoints&&r.viewpoints.length)?r.viewpoints:DEMO_VPS;
+  el('wait1').classList.remove('show');
+  renderVPs();el('step2').hidden=false;el('step2').scrollIntoView({behavior:'smooth'});
+};
+function renderVPs(){
+  el('vps').innerHTML=S.viewpoints.map((v,i)=>`
+    <div class="vp ${i===S.vpSel?'sel':''}" data-i="${i}">
+      <div class="top"><span class="tile">${esc((v.t||'观')[0])}</span><span class="t">${esc(v.t)}</span></div>
+      <div class="meta">${esc(v.src)} · 适合：${esc(v.who)}</div>
+      <div class="row"><em>痛点强度</em><span class="meter"><i style="width:${v.pain*20}%"></i></span></div>
+      <div class="row"><em>表达潜力</em><span class="meter"><i style="width:${v.expr*20}%"></i></span></div>
+      <div class="row"><em>推荐指数</em><span class="stars">${'★'.repeat(v.stars)}${'☆'.repeat(5-v.stars)}</span></div>
+      <div>${(v.chips||[]).map(c=>`<span class="chip">${esc(c)}</span>`).join('')}</div>
+    </div>`).join('');
+  $$('.vp').forEach(c=>c.onclick=()=>{
+    S.vpSel=+c.dataset.i;
+    renderVPs();
+    renderVpKws(S.viewpoints[S.vpSel].kws||[]);
+    el('vpVerifyCard').hidden=false;
+    el('btnFission').disabled=false;
+  });
+  el('btnFission').disabled=S.vpSel<0;
+}
+function renderVpKws(kws){
+  el('vp-kws').innerHTML=kws.map(k=>`<span data-kw="${esc(k)}">${esc(k)}</span>`).join('');
+  $$('#vp-kws span').forEach(s=>s.onclick=()=>{
+    navigator.clipboard?.writeText(s.dataset.kw).then(()=>toast('已复制「'+s.dataset.kw+'」，去小红书搜搜看'));
+  });
+}
+el('verified').onchange=e=>{S.verified=e.target.checked;};
+
+el('btnFission').onclick=async()=>{
+  el('step2').hidden=true;el('wait2').classList.add('show');setStage(2);
+  const r=await askAI(
+    buildSys('你是小红书痛点裂变专家。把用户选定的观点当作一个大痛点，裂变成 8-9 个观众真正关心的小痛点。严格输出 JSON：{"painpoints":[{"t":"痛点(≤22字)","d":"一句说明"}]}','fission','biz','score','tri'),
+    '观点：'+S.viewpoints[S.vpSel].t+'\n\n用户素材：\n'+materialText(),true);
+  S.painpoints=(r&&r.painpoints&&r.painpoints.length)?r.painpoints:DEMO_PPS;
+  el('wait2').classList.remove('show');
+  renderPPs();renderStructs();el('step3').hidden=false;el('step3').scrollIntoView({behavior:'smooth'});
+};
+function renderPPs(){
+  el('pps').innerHTML=S.painpoints.map((p,i)=>{
+    const role=i===S.core?'<span class="role">核心</span>':(S.aux.includes(i)?'<span class="role">辅助</span>':'');
+    const cls=i===S.core?'core':(S.aux.includes(i)?'aux':'');
+    const mark='✓';
+    return `<div class="pp ${cls}" data-i="${i}"><span class="cb">${mark}</span><span class="tx"><b>${esc(p.t)}${role}</b><small>${esc(p.d||'')}</small></span></div>`;
+  }).join('');
+  $$('.pp').forEach(c=>c.onclick=()=>{
+    const i=+c.dataset.i;
+    if(i===S.core){S.core=-1;}
+    else if(S.aux.includes(i)){S.aux=S.aux.filter(x=>x!==i);}
+    else if(S.core<0){S.core=i;}
+    else if(S.aux.length<2){S.aux.push(i);}
+    else{toast('已选满：一个核心 + 两个辅助，先取消一个再换');return;}
+    renderPPs();refreshBtn();
+  });
+  refreshBtn();
+}
+function refreshBtn(){
+  el('pp-count').innerHTML=S.core<0?'先选一个<b>核心痛点</b>':`核心 ×1 已定 · 辅助 ×<b>${S.aux.length}/2</b>${S.aux.length===2?' 已满':''}`;
+  el('btnCreate').disabled=!(S.core>=0&&S.aux.length===2&&S.structSel>=0);
+}
+function renderStructs(){
+  const def=DEMO_STRUCTS_ALL.slice(0,4), adv=DEMO_STRUCTS_ALL.slice(4);
+  el('structs').innerHTML=def.map((s,i)=>structHTML(s,i)).join('');
+  el('structs-adv').innerHTML=adv.map((s,i)=>structHTML(s,4+i)).join('');
+  $$('.struct').forEach(c=>c.onclick=()=>{S.structSel=+c.dataset.i;renderStructs();refreshBtn();});
+}
+function structHTML(s,i){
+  return `<div class="struct ${i===S.structSel?'sel':''}" data-i="${i}"><b>${esc(s.t)}</b><small>${esc(s.d)}</small></div>`;
+}
+
+el('btnCreate').onclick=()=>{
+  el('step3').hidden=true;el('step4').hidden=false;setStage(3);
+  renderSpit();
+  el('step4').scrollIntoView({behavior:'smooth'});
+};
+
+/* ================= step 4：口喷 → 草稿 → 多轮修改 ================= */
+function renderSpit(){
+  const frame=el('spitFrameWrap'), blank=el('spitBlankWrap');
+  const blankMode = S.spitMode==='blank';
+  frame.hidden=blankMode; blank.hidden=!blankMode;
+  el('spitToggle').innerHTML = blankMode
+    ? '回到按框架分段的口喷 →'
+    : '觉得死框架限制发挥或表达？点这里切换空白大框随意发挥 →';
+  if(!blankMode){
+    const secs=STRUCT_SECTIONS[S.structSel]||STRUCT_SECTIONS[0];
+    if(S.spitFrame.sel!==S.structSel){ S.spitFrame={sel:S.structSel,vals:secs.map(()=>'')}; }
+    frame.innerHTML=secs.map((s,i)=>`
+      <div class="spit-sec">
+        <div class="spit-sec-hd"><b>${i+1} · ${esc(s.k)}</b><span>${esc(s.h)}</span></div>
+        <textarea class="f spit-t" data-sec="${i}" placeholder="想到哪说到哪……">${esc(S.spitFrame.vals[i]||'')}</textarea>
+      </div>`).join('');
+    $$('.spit-t').forEach(t=>t.addEventListener('input',()=>{S.spitFrame.vals[+t.dataset.sec]=t.value;save();}));
+  }
+}
+function collectSpit(){
+  if(S.spitMode==='blank'){ S.spit=el('spitInput').value.trim(); return S.spit; }
+  const secs=STRUCT_SECTIONS[S.structSel]||STRUCT_SECTIONS[0];
+  const parts=[];
+  $$('.spit-t').forEach(t=>{const v=t.value.trim(); if(v) parts.push('【'+secs[+t.dataset.sec].k+'】\n'+v);});
+  S.spit=parts.join('\n\n');
+  return S.spit;
+}
+el('spitToggle').onclick=()=>{S.spitMode=(S.spitMode==='blank')?'frame':'blank';renderSpit();save();};
+
+el('btnSpit').onclick=async()=>{
+  const hasKey=!!el('ai-provider').value && !!el('ai-key').value.trim();
+  S.spit=collectSpit();
+  if(!S.spit){
+    if(hasKey){toast('先口喷几句你的真实经历');return;}
+    S.spit=DEMO_SPIT; S.spitMode='blank'; S.spitFrame={sel:-1,vals:[]}; renderSpit(); el('spitInput').value=DEMO_SPIT;
+  }
+  el('wait3').classList.add('show');
+  const mods = S.structSel===4 ? ['oral','style','bigtopic','xianbei','tri'] : ['oral','style','frame4','xianbei','tri'];
+  const r=await askAI(
+    buildSys('你是口播稿写手。根据骨架和用户的口喷内容，写一版完整的 3-5 分钟口播草稿：口语化、句句解决具体问题、不堆形容词。用【钩子】【痛点】【转折】【方法】【收尾】等小标题分段，段与段之间空一行。输出纯文本。',...mods),
+    '骨架：'+DEMO_STRUCTS_ALL[S.structSel].t+'\n核心痛点：'+(S.painpoints[S.core]||{}).t+'\n用户口喷：\n'+S.spit+'\n用户素材：\n'+materialText(),false);
+  S.draft=r||DEMO_DRAFT;
+  el('wait3').classList.remove('show');
+  S.segs=splitDraft(S.draft);
+  S.quoteSeg=-1; S.rounds=[];
+  renderDraft(); renderRounds(); refreshQuoteBar();
+  el('editCol').hidden=false;
+  el('editCol').scrollIntoView({behavior:'smooth'});
+};
+function splitDraft(t){
+  return t.split(/\n\s*\n/).map(s=>s.trim()).filter(Boolean);
+}
+function renderDraft(){
+  el('draftSegs').innerHTML=S.segs.map((s,i)=>`
+    <div class="seg ${i===S.quoteSeg?'quoted':''}" data-i="${i}">
+      <div class="seg-no"><span>第 ${i+1} 段</span><span class="quote-tag">引用中</span></div>
+      ${esc(s)}
+    </div>`).join('');
+  $$('.seg').forEach(c=>c.onclick=()=>{
+    S.quoteSeg = S.quoteSeg===+c.dataset.i ? -1 : +c.dataset.i;
+    renderDraft(); refreshQuoteBar();
+  });
+}
+function refreshQuoteBar(){
+  const on=S.quoteSeg>=0;
+  el('quoteBar').hidden=!on;
+  if(on) el('quoteSegNo').textContent=S.quoteSeg+1;
+}
+el('btnAsk').onclick=async()=>{
+  if(S.quoteSeg<0){toast('先在草稿里点一段要改的内容');return;}
+  const q=el('askInput').value.trim();
+  if(!q){toast('说说你想怎么改这段');return;}
+  const seg=S.segs[S.quoteSeg];
+  const r=await askAI(
+    buildSys('你是口播改稿搭档。只改用户指定的这一段，保留用户口吻、不重写整篇、不添加用户没讲过的经历。输出 JSON：{"revised":"改后这一段的完整文本"}','style','oral','tri'),
+    '整篇草稿：\n'+S.draft+'\n\n要改的段落：\n「'+seg+'」\n\n用户要求：'+q,true);
+  const revised=(r&&r.revised)?r.revised:DEMO_REVISE;
+  S.rounds.unshift({id:++S.roundId, seg:S.quoteSeg, quote:seg, ask:q, revised, status:'open'});
+  el('askInput').value='';
+  renderRounds();
+};
+function renderRounds(){
+  el('rounds').innerHTML=S.rounds.map(r=>{
+    const st=r.status==='done'?'<span class="st">✓ 已采用</span>':(r.status==='rejected'?'<span>· 已舍弃</span>':'<span>· 待定</span>');
+    return `<div class="round ${r.status==='done'?'done':''}" data-id="${r.id}">
+      <div class="r-meta"><span>第 ${r.seg+1} 段</span>${st}</div>
+      <div class="r-ask"><b>你想：</b>${esc(r.ask)}</div>
+      <div class="r-quote">原文：<s>${esc(r.quote)}</s></div>
+      <textarea class="rev-new" data-rev="${r.id}">${esc(r.revised)}</textarea>
+      <div class="r-actions">
+        <button class="r-btn r-accept" data-act="accept" data-id="${r.id}">采用此修订</button>
+        <button class="r-btn r-reject" data-act="reject" data-id="${r.id}">舍弃</button>
+      </div>
+    </div>`;
+  }).join('') || '<p class="hint">还没有修改记录。先在左边点一段草稿，再说说你想怎么改。</p>';
+  $$('#rounds .r-btn').forEach(b=>b.onclick=()=>roundAction(+b.dataset.id,b.dataset.act));
+}
+function roundAction(id,act){
+  const r=S.rounds.find(x=>x.id===id); if(!r)return;
+  if(act==='accept'){
+    const ta=el('rounds').querySelector('[data-rev="'+id+'"]');
+    S.segs[r.seg]=(ta&&ta.value.trim())?ta.value.trim():r.revised;
+    S.draft=S.segs.join('\n\n');
+    r.status='done';
+    renderDraft(); renderRounds();
+    toast('已替换第 '+(r.seg+1)+' 段 · 原稿已更新');
+  } else {
+    r.status='rejected'; renderRounds();
+  }
+}
+el('btnCopy').onclick=()=>{
+  navigator.clipboard?.writeText(S.draft).then(()=>toast('整篇草稿已复制 · 改完就是你自己的了'));
+};
+
+/* ================= teardown（可选） ================= */
+el('btnTear').onclick=async()=>{
+  const t=el('tearInput').value.trim();
+  if(!t){toast('先粘一段爆款文案进来');return;}
+  el('tearRes').hidden=true;
+  const r=await askAI(
+    buildSys('你是爆款拆解教练。把用户贴的爆款文案拆成可复用的逻辑，不复制原句。严格输出 JSON：{"teardown":[{"b":"维度","d":"具体拆解"}]}','tear','xianbei','tri'),
+    '爆款文案：\n'+t,true);
+  const td=(r&&r.teardown&&r.teardown.length)?r.teardown:DEMO_TEARDOWN;
+  el('tearRes').innerHTML='<span class="stamp">拆解结果 · 四问</span>'+td.map(s=>`<div class="row2"><b>${esc(s.b)}</b>${esc(s.d)}</div>`).join('');
+  el('tearRes').hidden=false;
+  el('tearRes').scrollIntoView({behavior:'smooth'});
+};
+
+/* ================= personal knowledge base ================= */
+function renderPkb(){
+  const secs=[
+    ['mat','素材系统','我怎么找到值得讲的东西'],
+    ['top','选题系统','我怎么判断一个选题值不值得做'],
+    ['con','内容系统','我怎么写、怎么改更顺'],
+    ['rev','复盘','发布后什么有效、什么无效']
+  ];
+  el('pkb').innerHTML=secs.map(([k,name,desc])=>`
+    <div class="pkb-sec">
+      <h4><span class="kb-src">${name}</span>${desc}</h4>
+      ${(S.pkb[k]||[]).map((it,i)=>`<div class="pkb-item"><span>${esc(it)}</span><button class="pkb-x" data-k="${k}" data-i="${i}">✕</button></div>`).join('')}
+      <div class="pkb-add"><input data-k="${k}" placeholder="加一条你的经验…"><button data-k="${k}">+</button></div>
+    </div>`).join('');
+  $$('.pkb-x').forEach(b=>b.onclick=()=>{S.pkb[b.dataset.k].splice(+b.dataset.i,1);renderPkb();save();});
+  $$('.pkb-add button').forEach(b=>b.onclick=()=>addPkb(b.dataset.k));
+  $$('.pkb-add input').forEach(i=>i.addEventListener('keydown',e=>{if(e.key==='Enter')addPkb(i.dataset.k);}));
+}
+function addPkb(k){
+  const input=el('pkb').querySelector('.pkb-add input[data-k="'+k+'"]');
+  const v=input.value.trim(); if(!v)return;
+  S.pkb[k].push(v); input.value=''; renderPkb(); save();
+  toast('已存进你的经验库');
+}
+
+/* ================= settings ================= */
+el('btnSettings').onclick=()=>el('modalSettings').classList.add('show');
+el('aiStatus').onclick=()=>el('modalSettings').classList.add('show');
+$$('[data-close]').forEach(b=>b.onclick=()=>el('modalSettings').classList.remove('show'));
+el('modalSettings').addEventListener('click',e=>{if(e.target.id==='modalSettings')e.target.classList.remove('show');});
+el('btnSaveSettings').onclick=()=>{save();el('modalSettings').classList.remove('show');toast(el('ai-provider').value&&el('ai-key').value.trim()?'已保存 · AI 已接入，全程定制化':'已切回演示模式');};
+
+function updateAiStatus(){
+  const p=el('ai-provider').value, key=el('ai-key').value.trim();
+  const on=!!p&&!!key;
+  el('aiStatus').classList.toggle('live',on);
+  const name=AI_CFG[p]?AI_CFG[p].name:p;
+  el('aiStatusTxt').textContent = on ? ('已接入 · '+name) : (p?('已选 '+name+' · 未填 Key'):'演示模式');
+}
+function renderProviderInfo(){
+  const p=el('ai-provider').value, cfg=AI_CFG[p], site=el('providerSite');
+  if(!cfg){ site.hidden=true; }
+  else{
+    site.hidden=false;
+    el('siteName').textContent=cfg.name+' · 官方获取 / 充值 API Key';
+    el('siteLink').textContent=cfg.site; el('siteLink').href=cfg.site;
+    el('siteHint').textContent=cfg.hint;
+  }
+  updateAiStatus();
+}
+el('ai-provider').addEventListener('change',()=>{
+  const cfg=AI_CFG[el('ai-provider').value];
+  el('ai-model').value = cfg?cfg.model:'';
+  renderProviderInfo(); save();
+});
+el('ai-model').addEventListener('input',save);
+el('ai-key').addEventListener('input',updateAiStatus);
+
+/* ================= boot ================= */
+restore();refreshNotes();setStage(1);
+if(!el('ai-model').value){const c=AI_CFG[el('ai-provider').value];if(c)el('ai-model').value=c.model;}
+renderProviderInfo();
+</script>
+</body>
+</html>
