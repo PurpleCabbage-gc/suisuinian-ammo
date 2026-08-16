@@ -197,6 +197,29 @@ textarea.f{resize:vertical;min-height:74px}
 .checkline{display:flex;gap:9px;align-items:flex-start;font-size:.79rem;margin-top:8px;cursor:pointer;color:var(--ink)}
 .checkline input{width:17px;height:17px;accent-color:var(--green-deep);margin-top:3px;flex:none}
 .caution{background:#FBF3E6;border:1px solid #EADFC2;border-radius:8px;padding:10px 12px;font-size:.78rem;color:#8A6D3B;line-height:1.7;margin:8px 0}
+.back-btn{display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid var(--line);border-radius:8px;color:var(--muted);font-size:.8rem;padding:6px 12px;cursor:pointer;font-family:inherit;margin:2px 0 10px}
+.back-btn:hover{color:var(--green-deep);border-color:var(--green-line)}
+.voice-hint{font-size:.72rem;color:var(--muted);margin:6px 0 0;line-height:1.6}
+.seg{border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin:8px 0;background:var(--card)}
+.seg.quoted{border:1.5px solid var(--green-deep);box-shadow:0 0 0 3px var(--green-soft)}
+.seg .seg-no{font-size:.62rem;color:var(--muted);letter-spacing:.08em;margin-bottom:5px;display:flex;justify-content:space-between;align-items:center}
+.seg .seg-no b{color:var(--green-deep);font-weight:700}
+.seg-tools{display:flex;gap:6px}
+.seg-tool{border:1px solid var(--green-line);background:var(--card);color:var(--green-deep);font-size:.66rem;border-radius:4px;padding:1px 7px;cursor:pointer;font-family:inherit}
+.seg-tool:hover{background:var(--green-soft)}
+.seg-edit{width:100%;min-height:72px;border:1px solid var(--line);border-radius:7px;padding:10px 12px;font-size:.9rem;line-height:1.9;font-family:inherit;background:var(--card);resize:vertical;color:var(--ink)}
+.seg-edit:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px var(--green-soft)}
+.quote-bar .quote-phrase{display:block;font-size:.74rem;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:5px;padding:4px 8px;margin-top:5px;max-height:90px;overflow:auto;line-height:1.6}
+.arch{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:9px;padding:12px 13px;margin:8px 0;background:var(--card)}
+.arch .a-ic{width:34px;height:34px;border-radius:8px;background:var(--green-soft);color:var(--green-deep);display:flex;align-items:center;justify-content:center;flex:none;font-size:.9rem}
+.arch .a-body{flex:1;min-width:0}
+.arch b{font-size:.88rem;display:block}
+.arch .a-meta{font-size:.7rem;color:var(--muted);margin-top:2px}
+.arch .a-prev{font-size:.75rem;color:var(--muted);margin-top:4px;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.arch .a-actions{display:flex;gap:8px;margin-top:8px}
+.a-btn{flex:none;border:1.5px solid var(--green-deep);background:var(--green-deep);color:#FBF9F2;border-radius:7px;padding:5px 12px;font-size:.78rem;cursor:pointer;font-family:inherit;font-weight:700}
+.a-btn.ghost{background:transparent;color:var(--muted);border-color:var(--line)}
+footer .ver{color:var(--brass);font-weight:700}
 
 /* ---------- structure ---------- */
 .struct{border:1px solid var(--line);border-radius:9px;padding:13px 14px;margin:8px 0;cursor:pointer}
@@ -372,6 +395,7 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
   <button class="on" data-tab="create">创作流水线</button>
   <button data-tab="kb">知识库</button>
   <button data-tab="roadmap">Roadmap</button>
+  <button data-tab="archive">存档</button>
   <button data-tab="about">原则</button>
 </nav>
 
@@ -435,6 +459,7 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
 
   <!-- ===== STEP 2 素材 × 选题：观点 + 手动验证 ===== -->
   <section id="step2" hidden>
+    <button class="back-btn" onclick="goStep(1)">← 返回上一步</button>
     <div class="card">
       <span class="stamp">素材系统 ✕ 选题系统</span>
       <h3>AI 发现了三个值得表达的观点</h3>
@@ -458,6 +483,7 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
 
   <!-- ===== STEP 3 选题系统：痛点 + 骨架 + 拆解 ===== -->
   <section id="step3" hidden>
+    <button class="back-btn" onclick="goStep(2)">← 返回上一步</button>
     <div class="card">
       <span class="stamp">选题系统 · 大家想听的</span>
       <h3>裂变出的痛点</h3>
@@ -486,11 +512,13 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
     </div>
 
     <button class="btn" id="btnCreate" disabled>开始创作 →</button>
+    <button class="btn ghost sm" id="btnSaveStep3" style="margin-top:0">存档当前选题</button>
   </section>
   </div><!-- /flow -->
 
   <!-- ===== STEP 4 内容系统：口喷 → 草稿 → 多轮修改 ===== -->
   <section id="step4" hidden>
+    <button class="back-btn" onclick="goStep(3)">← 返回上一步</button>
     <div class="card" style="max-width:760px;margin-left:auto;margin-right:auto">
       <span class="stamp">内容系统 · 爱听的方式</span>
       <h3>对着骨架，把你的内容「口喷」出来</h3>
@@ -501,6 +529,7 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
         <textarea class="f" id="spitInput" rows="7" placeholder="把你想说的整段喷出来，想到哪说到哪……"></textarea>
       </div>
       <button class="btn" id="btnSpit">基于骨架 + 我的口喷，出完整草稿 →</button>
+      <p class="voice-hint">💡 想更快？直接用手机 / 输入法自带的语音输入，对着说就行（本版暂未内置语音识别）。</p>
     </div>
 
     <div class="ai-wait" id="wait3"><div class="eye"></div><p>AI 正在把你的口喷整理成完整口播稿……<br>记住：它写的是草稿，终稿永远是你的</p></div>
@@ -510,18 +539,22 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
         <div class="card">
           <span class="stamp">内容系统 · 草稿</span>
           <h3>口播草稿<span class="badge-draft">草 稿</span></h3>
-          <p class="hint">点任意一段就「引用」它，去右边让 AI 针对性修改；改好的版本一键替换回原稿。</p>
+          <p class="hint">每段都能直接改；选中段里的某几个字 / 一句话，去右边点「引用选中词句」，让 AI 只改那部分。</p>
           <div id="draftSegs"></div>
-          <button class="btn ghost sm" id="btnCopy">复制整篇草稿</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn ghost sm" id="btnCopy" style="flex:1">复制整篇草稿</button>
+            <button class="btn ghost sm" id="btnArchive" style="flex:1">存档这一版</button>
+          </div>
         </div>
       </div>
       <div>
         <div class="card">
           <span class="stamp">内容系统 · 引用提问</span>
           <h3>跟 AI 一来一回改</h3>
-          <div class="quote-bar" id="quoteBar" hidden>正在引用第 <b id="quoteSegNo">—</b> 段</div>
-          <textarea class="f" id="askInput" rows="2" placeholder="针对这段说点什么：太抽象了，帮我换成具体画面……"></textarea>
-          <button class="btn sm" id="btnAsk">问 AI 怎么改这段 →</button>
+          <div class="quote-bar" id="quoteBar" hidden>已引用第 <b id="quoteSegNo">—</b> 段<span class="quote-phrase" id="quotePhrase"></span></div>
+          <button class="btn sm ghost" id="btnQuoteSel" style="margin-top:4px">引用选中词句（先去左边选中文字）</button>
+          <textarea class="f" id="askInput" rows="2" placeholder="针对引用的这部分说点什么：太抽象，帮我换成具体画面……"></textarea>
+          <button class="btn sm" id="btnAsk">问 AI 怎么改这部分 →</button>
           <div id="rounds"></div>
         </div>
       </div>
@@ -664,10 +697,21 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
   </div>
 </div>
 
+<!-- ============ TAB: archive ============ -->
+<div id="tab-archive" hidden>
+  <div class="card">
+    <span class="stamp">存档</span>
+    <h3>你存下来的每一版</h3>
+    <p class="hint">在流水线里点「存档这一版」，就会把当前进度（选题、骨架、口喷、草稿）存到这里。点「回到这里」直接跳回那一版所在的步骤。</p>
+    <div id="archiveList"></div>
+  </div>
+</div>
+
 <footer>
   <p>AI 生成内容主动打标，合规不影响流量</p>
   <p>人类图缺乏严谨科学依据，测出来不贴切就别管它，别被结果困住</p>
   <p>你的数据只存在你自己的浏览器里</p>
+  <p class="ver">v0.2.0</p>
 </footer>
 </div>
 
@@ -712,14 +756,15 @@ footer p::before{content:"—";color:var(--brass);font-weight:900}
 <script>
 /* ================= state ================= */
 const S = {
-  tab:'create', stage:0,
+  tab:'create', stage:0, step:1,
   viewpoints:[], vpSel:-1, verified:false,
   painpoints:[], core:-1, aux:[],
   structSel:-1,
   spit:'', spitMode:'frame', spitFrame:{sel:-1,vals:[]},
-  draft:'', segs:[], quoteSeg:-1,
+  draft:'', segs:[], quote:null, activeSeg:0,
   rounds:[], roundId:0,
-  pkb:{mat:[],top:[],con:[],rev:[]}
+  pkb:{mat:[],top:[],con:[],rev:[]},
+  archives:[], aid:0
 };
 const $ = s=>document.querySelector(s);
 const $$ = s=>document.querySelectorAll(s);
@@ -737,7 +782,9 @@ function save(){try{localStorage.setItem('suisuinian',JSON.stringify({
   spit:el('spitInput').value,
   spitMode:S.spitMode,
   spitFrame:S.spitFrame,
-  pkb:S.pkb
+  pkb:S.pkb,
+  archives:S.archives,
+  aid:S.aid
 }))}catch(e){}}
 function restore(){try{
   const d=JSON.parse(localStorage.getItem('suisuinian')||'null');if(!d)return;
@@ -751,15 +798,19 @@ function restore(){try{
   if(d.spitMode)S.spitMode=d.spitMode;
   if(d.spitFrame)S.spitFrame=d.spitFrame;
   if(d.pkb)S.pkb=Object.assign({mat:[],top:[],con:[],rev:[]},d.pkb);
+  if(d.archives)S.archives=d.archives;
+  if(d.aid)S.aid=d.aid;
   refreshNotes();
 }catch(e){}}
 
 /* ================= tabs ================= */
-$$('.tabs button').forEach(b=>b.onclick=()=>{
-  $$('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  ['create','kb','roadmap','about'].forEach(t=>el('tab-'+t).hidden=(t!==b.dataset.tab));
-  if(b.dataset.tab==='kb')renderPkb();
-});
+function goTab(name){
+  $$('.tabs button').forEach(x=>x.classList.toggle('on',x.dataset.tab===name));
+  ['create','kb','roadmap','about','archive'].forEach(t=>el('tab-'+t).hidden=(t!==name));
+  if(name==='kb')renderPkb();
+  if(name==='archive')renderArchive();
+}
+$$('.tabs button').forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
 
 /* ================= stage bar ================= */
 function setStage(n){
@@ -768,6 +819,23 @@ function setStage(n){
     el('seg'+i).className = i<n?'done':(i===n?'cur':'');
     el('lab'+i).classList.toggle('on',i<=n);
   });
+}
+const STEP_STAGE={1:1,2:1,3:2,4:3};
+function goStep(n){
+  S.step=n;
+  [1,2,3,4].forEach(i=>el('step'+i).hidden=(i!==n));
+  ['wait1','wait2','wait3'].forEach(w=>el(w).classList.remove('show'));
+  setStage(STEP_STAGE[n]);
+  if(n===1)refreshNotes();
+  if(n===2)renderVPs();
+  if(n===3){renderPPs();renderStructs();refreshBtn();}
+  if(n===4){
+    renderSpit();
+    const has=S.segs.length>0;
+    el('editCol').hidden=!has;
+    if(has){renderDraft();renderRounds();refreshQuoteBar();}
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
 /* ================= notes state ================= */
@@ -822,6 +890,7 @@ const KB = {
   ctx:{ frag:'分析用户素材时的纪律：把「用户明确提供的经历」和「你的推测判断」分开表述；不许编造用户没有提供的经历；信息不足时输出保守结论并说明。分析必须以上下文里用户明确输入的内容（日志、灵感、定位卡、风格卡）为主。人类图是缺乏严谨科学依据的自我观察框架，仅作次要参考——用户未填写就完全忽略；即使用户填写，也只作了解性参考，不要用它下结论、不要把人框进类型标签。'},
   quiz:{ frag:'用定位问卷的维度评估素材价值：过去五年持续投入一年以上的事；别人最常向用户请教什么；做成过什么、结果如何；哪些话题即使没有收入也愿意持续研究；哪一类人的处境是用户真正了解的。命中维度越多的观点，越值得推荐。'},
   style:{ frag:'写作纪律：遵守用户风格卡（口头禅与语气照用，禁词一个不许出现）。避免典型 AI 腔：堆形容词、空洞排比和口号、「家人们」「绝绝子」式套话、强行升华的结尾。像跟一个具体的朋友讲话，多用短句和具体名词，少用抽象大词。'},
+  humanize:{ frag:'去 AI 味纪律（Humanizer-zh 方法论）：写出的中文必须像母语者真实写出来的，不像翻译稿或模型拼接稿。硬规则：①不用空泛大词套话——「赋能」「颠覆」「重塑」「打造」「至关重要」「深入探讨」「开启新篇章」「标志着」「见证了」一律不用，抽象判断必须落回具体动作、成本、结果；②打散机械结构——不用「首先/其次/最后」「与此同时」「值得注意的是」这类模板连接词，少用「不是……而是……」否定排比，三段式排比改成两句或四句；③句子长短错落，别句句等长，段落结尾别总落在一句漂亮的价值升华上；④少用破折号「——」和冒号，能改逗号、句号或拆句就改；⑤别谄媚——不用「当然可以」「希望这对你有帮助」「好问题」这类客服腔；⑥允许第一人称和真实感受，先给机制/证据再下判断，承认复杂性；⑦宁可有观点、有细节、有一点乱，也不要通篇工整得像报告。守住边界：不能为了去 AI 味而改动事实、立场、因果、范围或确定程度。交付前自查：有没有连续三句等长？有没有「此外/然而/首先」？有没有排比三连？有没有空泛升华的结尾？'},
   oral:{ frag:'产出为口播稿：口语、短句、说人话。每一段都必须在解决观众的具体问题——不跑题（每部分围绕核心痛点）、句句有用（都是干货）、讲到心坎上（是观众期待的内容）。先想清楚「为什么讲」再动笔。'},
   native:{ frag:'AI-Native 原则：不要问「这一步怎么交给 AI」，要问「如果 AI 从一开始就存在，这个流程应该长什么样」。把人从机械劳动里解放出来，把判断权和最终表达留给人。'},
   position:{ frag:'账号定位纪律：先读用户【定位卡】，判断这条内容属于用户自己的哪根内容支柱，再动笔；语言照用户【风格卡】的口头禅与语气写，保留原话，删除连续重复与绕句；避免整齐对仗的营销话术、夸大焦虑、网感套话。'},
@@ -969,7 +1038,7 @@ el('btnScreen').onclick=async()=>{
     materialText(),true);
   S.viewpoints = (r&&r.viewpoints&&r.viewpoints.length)?r.viewpoints:DEMO_VPS;
   el('wait1').classList.remove('show');
-  renderVPs();el('step2').hidden=false;el('step2').scrollIntoView({behavior:'smooth'});
+  renderVPs();S.step=2;el('step2').hidden=false;el('step2').scrollIntoView({behavior:'smooth'});
 };
 function renderVPs(){
   el('vps').innerHTML=S.viewpoints.map((v,i)=>`
@@ -1005,7 +1074,7 @@ el('btnFission').onclick=async()=>{
     '观点：'+S.viewpoints[S.vpSel].t+'\n\n用户素材：\n'+materialText(),true);
   S.painpoints=(r&&r.painpoints&&r.painpoints.length)?r.painpoints:DEMO_PPS;
   el('wait2').classList.remove('show');
-  renderPPs();renderStructs();el('step3').hidden=false;el('step3').scrollIntoView({behavior:'smooth'});
+  renderPPs();renderStructs();S.step=3;el('step3').hidden=false;el('step3').scrollIntoView({behavior:'smooth'});
 };
 function renderPPs(){
   el('pps').innerHTML=S.painpoints.map((p,i)=>{
@@ -1040,7 +1109,7 @@ function structHTML(s,i){
 }
 
 el('btnCreate').onclick=()=>{
-  el('step3').hidden=true;el('step4').hidden=false;setStage(3);
+  el('step3').hidden=true;el('step4').hidden=false;S.step=4;setStage(3);
   renderSpit();
   el('step4').scrollIntoView({behavior:'smooth'});
 };
@@ -1082,14 +1151,14 @@ el('btnSpit').onclick=async()=>{
     S.spit=DEMO_SPIT; S.spitMode='blank'; S.spitFrame={sel:-1,vals:[]}; renderSpit(); el('spitInput').value=DEMO_SPIT;
   }
   el('wait3').classList.add('show');
-  const mods = S.structSel===4 ? ['oral','style','bigtopic','xianbei','tri'] : ['oral','style','frame4','xianbei','tri'];
+  const mods = S.structSel===4 ? ['oral','style','humanize','bigtopic','xianbei','tri'] : ['oral','style','humanize','frame4','xianbei','tri'];
   const r=await askAI(
     buildSys('你是口播稿写手。根据骨架和用户的口喷内容，写一版完整的 3-5 分钟口播草稿：口语化、句句解决具体问题、不堆形容词。用【钩子】【痛点】【转折】【方法】【收尾】等小标题分段，段与段之间空一行。输出纯文本。',...mods),
     '骨架：'+DEMO_STRUCTS_ALL[S.structSel].t+'\n核心痛点：'+(S.painpoints[S.core]||{}).t+'\n用户口喷：\n'+S.spit+'\n用户素材：\n'+materialText(),false);
   S.draft=r||DEMO_DRAFT;
   el('wait3').classList.remove('show');
   S.segs=splitDraft(S.draft);
-  S.quoteSeg=-1; S.rounds=[];
+  S.quote=null; S.rounds=[];
   renderDraft(); renderRounds(); refreshQuoteBar();
   el('editCol').hidden=false;
   el('editCol').scrollIntoView({behavior:'smooth'});
@@ -1099,30 +1168,49 @@ function splitDraft(t){
 }
 function renderDraft(){
   el('draftSegs').innerHTML=S.segs.map((s,i)=>`
-    <div class="seg ${i===S.quoteSeg?'quoted':''}" data-i="${i}">
-      <div class="seg-no"><span>第 ${i+1} 段</span><span class="quote-tag">引用中</span></div>
-      ${esc(s)}
+    <div class="seg ${S.quote&&S.quote.seg===i?'quoted':''}" data-i="${i}">
+      <div class="seg-no"><span>第 ${i+1} 段</span><span class="seg-tools"><button class="seg-tool" data-sel="${i}">引用选中词句</button></span></div>
+      <textarea class="seg-edit" data-i="${i}">${esc(s)}</textarea>
     </div>`).join('');
-  $$('.seg').forEach(c=>c.onclick=()=>{
-    S.quoteSeg = S.quoteSeg===+c.dataset.i ? -1 : +c.dataset.i;
-    renderDraft(); refreshQuoteBar();
+  $$('.seg-edit').forEach(t=>{
+    t.addEventListener('input',()=>{S.segs[+t.dataset.i]=t.value;S.draft=S.segs.join('\n\n');});
+    t.addEventListener('focus',()=>{S.activeSeg=+t.dataset.i;});
+    t.addEventListener('select',()=>{S.activeSeg=+t.dataset.i;});
   });
+  $$('.seg-tool').forEach(b=>b.onclick=()=>{S.activeSeg=+b.dataset.sel;quoteSelection();});
+}
+function quoteSelection(){
+  const i=(S.activeSeg!=null)?S.activeSeg:0;
+  const ta=el('draftSegs').querySelector('.seg-edit[data-i="'+i+'"]');
+  if(!ta){toast('还没有草稿');return;}
+  let start=ta.selectionStart, end=ta.selectionEnd;
+  if(start==null||start===end){start=0;end=ta.value.length;}
+  const text=ta.value.slice(start,end);
+  if(!text){toast('这一块是空的，先写点内容再引用');return;}
+  S.quote={seg:i,start,end,text};
+  renderDraft(); refreshQuoteBar();
+  el('askInput').focus();
 }
 function refreshQuoteBar(){
-  const on=S.quoteSeg>=0;
+  const on=!!S.quote;
   el('quoteBar').hidden=!on;
-  if(on) el('quoteSegNo').textContent=S.quoteSeg+1;
+  if(on){
+    el('quoteSegNo').textContent=S.quote.seg+1;
+    el('quotePhrase').textContent='「'+S.quote.text+'」';
+  }
 }
+el('btnQuoteSel').onclick=()=>quoteSelection();
 el('btnAsk').onclick=async()=>{
-  if(S.quoteSeg<0){toast('先在草稿里点一段要改的内容');return;}
+  if(!S.quote){toast('先在左边选中要改的词句，再点「引用选中词句」');return;}
   const q=el('askInput').value.trim();
-  if(!q){toast('说说你想怎么改这段');return;}
-  const seg=S.segs[S.quoteSeg];
+  if(!q){toast('说说你想怎么改这部分');return;}
+  const seg=S.segs[S.quote.seg];
+  const before=seg.slice(0,S.quote.start), after=seg.slice(S.quote.end);
   const r=await askAI(
-    buildSys('你是口播改稿搭档。只改用户指定的这一段，保留用户口吻、不重写整篇、不添加用户没讲过的经历。输出 JSON：{"revised":"改后这一段的完整文本"}','style','oral','tri'),
-    '整篇草稿：\n'+S.draft+'\n\n要改的段落：\n「'+seg+'」\n\n用户要求：'+q,true);
-  const revised=(r&&r.revised)?r.revised:DEMO_REVISE;
-  S.rounds.unshift({id:++S.roundId, seg:S.quoteSeg, quote:seg, ask:q, revised, status:'open'});
+    buildSys('你是口播改稿搭档。用户从草稿里选中了一小段（几个词到一句话）要求改表达。你只改「被选中的这部分」的表达，输出改后的这部分文本；选中范围之外的内容一个字都不许改。改的时候必须读上下文（选中部分前后各一句），保证改完的词句和前后句衔接自然、不孤立——人称、指代、时态、语气都要顺，读起来像原本就写在这。输出 JSON：{"revised":"只含改后选中部分的文本，不要带前后文"}','humanize','style','oral','tri'),
+    '整篇草稿：\n'+S.draft+'\n\n被选中的部分（只改这部分）：\n「'+S.quote.text+'」\n\n它的上下文——前一句末尾：'+before.slice(-40)+'\n后一句开头：'+after.slice(0,40)+'\n\n用户要求：'+q,true);
+  const revised=(r&&r.revised)?r.revised:S.quote.text;
+  S.rounds.unshift({id:++S.roundId, seg:S.quote.seg, start:S.quote.start, end:S.quote.end, quote:S.quote.text, ask:q, revised, status:'open'});
   el('askInput').value='';
   renderRounds();
 };
@@ -1130,7 +1218,7 @@ function renderRounds(){
   el('rounds').innerHTML=S.rounds.map(r=>{
     const st=r.status==='done'?'<span class="st">✓ 已采用</span>':(r.status==='rejected'?'<span>· 已舍弃</span>':'<span>· 待定</span>');
     return `<div class="round ${r.status==='done'?'done':''}" data-id="${r.id}">
-      <div class="r-meta"><span>第 ${r.seg+1} 段</span>${st}</div>
+      <div class="r-meta"><span>第 ${r.seg+1} 段 · 部分词句</span>${st}</div>
       <div class="r-ask"><b>你想：</b>${esc(r.ask)}</div>
       <div class="r-quote">原文：<s>${esc(r.quote)}</s></div>
       <textarea class="rev-new" data-rev="${r.id}">${esc(r.revised)}</textarea>
@@ -1139,18 +1227,20 @@ function renderRounds(){
         <button class="r-btn r-reject" data-act="reject" data-id="${r.id}">舍弃</button>
       </div>
     </div>`;
-  }).join('') || '<p class="hint">还没有修改记录。先在左边点一段草稿，再说说你想怎么改。</p>';
+  }).join('') || '<p class="hint">还没有修改记录。先去左边选中几个字 / 一句话，点「引用选中词句」，再说说你想怎么改。</p>';
   $$('#rounds .r-btn').forEach(b=>b.onclick=()=>roundAction(+b.dataset.id,b.dataset.act));
 }
 function roundAction(id,act){
   const r=S.rounds.find(x=>x.id===id); if(!r)return;
   if(act==='accept'){
     const ta=el('rounds').querySelector('[data-rev="'+id+'"]');
-    S.segs[r.seg]=(ta&&ta.value.trim())?ta.value.trim():r.revised;
+    const val=(ta&&ta.value.trim())?ta.value.trim():r.revised;
+    const seg=S.segs[r.seg];
+    S.segs[r.seg]=seg.slice(0,r.start)+val+seg.slice(r.end);
     S.draft=S.segs.join('\n\n');
     r.status='done';
     renderDraft(); renderRounds();
-    toast('已替换第 '+(r.seg+1)+' 段 · 原稿已更新');
+    toast('已替换该词句 · 原稿对应位置已更新');
   } else {
     r.status='rejected'; renderRounds();
   }
@@ -1197,6 +1287,59 @@ function addPkb(k){
   S.pkb[k].push(v); input.value=''; renderPkb(); save();
   toast('已存进你的经验库');
 }
+
+/* ================= archives ================= */
+function snapshot(){
+  return {
+    viewpoints:S.viewpoints, vpSel:S.vpSel,
+    painpoints:S.painpoints, core:S.core, aux:S.aux,
+    structSel:S.structSel,
+    spit:S.spit, spitMode:S.spitMode, spitFrame:S.spitFrame,
+    segs:S.segs.slice(), draft:S.draft
+  };
+}
+function applySnapshot(s){
+  S.viewpoints=s.viewpoints||[]; S.vpSel=s.vpSel??-1;
+  S.painpoints=s.painpoints||[]; S.core=s.core??-1; S.aux=s.aux||[];
+  S.structSel=s.structSel??-1;
+  S.spit=s.spit||''; S.spitMode=s.spitMode||'frame'; S.spitFrame=s.spitFrame||{sel:-1,vals:[]};
+  S.segs=(s.segs&&s.segs.length)?s.segs.slice():[];
+  S.draft=s.draft||S.segs.join('\n\n');
+  S.rounds=[]; S.roundId=0; S.quote=null;
+}
+function saveArchive(){
+  const s=snapshot();
+  const d=new Date();
+  const name='存档 · '+(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  S.archives.unshift({id:++S.aid, name, time:d.getTime(), step:S.step, s});
+  save(); renderArchive();
+  toast('已存档 · 可在「存档」标签页一键回到这里');
+}
+function renderArchive(){
+  const box=el('archiveList');
+  if(!S.archives.length){box.innerHTML='<p class="hint">还没有存档。在流水线里点「存档这一版」就能把当前进度存下来。</p>';return;}
+  box.innerHTML=S.archives.map(a=>{
+    let preview=a.s.draft||a.s.spit||'';
+    if(!preview&&a.s.painpoints&&a.s.painpoints.length&&a.s.core>=0)preview=(a.s.painpoints[a.s.core]||{}).t||'';
+    if(!preview&&a.s.viewpoints&&a.s.vpSel>=0)preview=(a.s.viewpoints[a.s.vpSel]||{}).t||'';
+    return `<div class="arch" data-id="${a.id}">
+      <div class="a-ic">${a.step===4?'稿':(a.step===3?'题':(a.step===2?'观':'料'))}</div>
+      <div class="a-body">
+        <b>${esc(a.name)}</b>
+        <div class="a-meta">第 ${a.step} 步 · ${new Date(a.time).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
+        <div class="a-prev">${esc(preview)}</div>
+        <div class="a-actions">
+          <button class="a-btn" data-go="${a.id}">回到这里</button>
+          <button class="a-btn ghost" data-del="${a.id}">删除</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  $$('#archiveList [data-go]').forEach(b=>b.onclick=()=>{const a=S.archives.find(x=>x.id===+b.dataset.go);if(a){applySnapshot(a.s);goTab('create');goStep(a.step);}});
+  $$('#archiveList [data-del]').forEach(b=>b.onclick=()=>{S.archives=S.archives.filter(x=>x.id!==+b.dataset.del);save();renderArchive();});
+}
+el('btnArchive').onclick=saveArchive;
+el('btnSaveStep3').onclick=saveArchive;
 
 /* ================= settings ================= */
 el('btnSettings').onclick=()=>el('modalSettings').classList.add('show');
