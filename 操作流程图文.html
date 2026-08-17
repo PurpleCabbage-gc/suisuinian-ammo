@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>碎碎念弹药库 · 操作流程图文（9页截图版）</title>
+<style>
+:root{
+  --paper:#F6F3EC; --card:#FFFDF8; --ink:#23281F; --muted:#8A8574;
+  --green:#2F6B4F; --green-deep:#24523D; --green-soft:#E4EEE6; --green-line:#C9DCCE;
+  --brass:#A97F24; --brass-soft:#F5EAD3; --note:#FFF9DD;
+  --line:#E6E0D1; --line-soft:#EFEAE0; --warn:#B4553D;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#DEDAD0;font-family:"PingFang SC","Microsoft YaHei",sans-serif;padding:28px 0 60px}
+/* ---------- 顶部说明（灰色区域，不截） ---------- */
+.guide{max-width:810px;margin:0 auto 26px;padding:0 16px}
+.guide h1{font-size:15px;color:#4c4739;letter-spacing:.05em}
+.guide p{font-size:12.5px;color:#7a7566;line-height:1.8;margin-top:6px}
+.guide b{color:#4c4739}
+/* ---------- 每页标签（灰色区域，不截） ---------- */
+.plabel{max-width:810px;margin:34px auto 8px;padding:0 16px;font-size:12px;color:#8a8574;letter-spacing:.08em}
+.plabel b{color:#4c4739}
+/* ---------- 卡片：3:4，810x1080，截图只截卡片 ---------- */
+.page{
+  width:810px;height:1080px;margin:0 auto;background:var(--paper);
+  position:relative;overflow:hidden;padding:64px 60px;
+  box-shadow:0 6px 30px rgba(35,40,31,.18);
+  display:flex;flex-direction:column;
+}
+.serif{font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif}
+/* 页眉页脚 */
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:34px}
+.ph .brand{font-size:17px;font-weight:700;color:var(--green-deep);letter-spacing:.14em}
+.ph .num{font-size:13px;color:var(--muted);letter-spacing:.2em}
+.pf{margin-top:auto;padding-top:26px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.pf span{font-size:12.5px;color:var(--muted);letter-spacing:.06em}
+.pf .url{font-size:12.5px;color:var(--brass);font-weight:700;letter-spacing:.02em}
+/* 步骤徽章 + 标题 */
+.stepbadge{display:inline-flex;align-items:center;gap:10px;margin-bottom:18px}
+.stepbadge .no{width:46px;height:46px;border-radius:50%;background:var(--green-deep);color:#FBF9F2;display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;flex:none}
+.stepbadge .lab{font-size:14px;color:var(--green);font-weight:700;letter-spacing:.22em}
+h2.title{font-size:47px;line-height:1.32;color:var(--ink);letter-spacing:.01em;margin-bottom:20px}
+h2.title em{font-style:normal;color:var(--green-deep)}
+.lead{font-size:20.5px;line-height:1.85;color:#4c4739}
+.lead b{color:var(--green-deep)}
+/* 角标（卡点页） */
+.corner{position:absolute;top:0;right:0;background:var(--brass);color:#FFFDF8;font-size:16.5px;font-weight:700;letter-spacing:.1em;padding:12px 22px;border-bottom-left-radius:14px;box-shadow:0 3px 10px rgba(169,127,36,.35)}
+/* 截图占位 */
+.shot{border:2.5px dashed var(--green-line);border-radius:14px;background:rgba(228,238,230,.38);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-top:26px;flex:1;min-height:150px}
+.shot .cam{font-size:34px}
+.shot p{font-size:15.5px;color:var(--green-deep);font-weight:700;letter-spacing:.04em}
+.shot small{font-size:12.5px;color:var(--muted);line-height:1.7;text-align:center;max-width:80%}
+.shot.half{flex:0 0 auto;height:330px}
+/* 要点行 */
+.pt{display:flex;gap:14px;align-items:flex-start;margin-top:18px}
+.pt .ic{width:30px;height:30px;border-radius:8px;background:var(--green-soft);color:var(--green-deep);display:flex;align-items:center;justify-content:center;font-size:15px;flex:none;margin-top:3px}
+.pt .tx{font-size:19px;line-height:1.75;color:#4c4739}
+.pt .tx b{color:var(--ink)}
+/* 便签卡 */
+.slip{background:var(--note);border:1px solid #EBDFB2;border-radius:10px;padding:14px 18px;font-size:16.5px;line-height:1.8;color:#6b5b23;margin-top:22px}
+.slip b{color:#8a6a15}
+/* 胶带 */
+.tape{position:absolute;width:120px;height:32px;background:rgba(169,127,36,.28);transform:rotate(-4deg);top:-14px;left:52px;border-radius:2px}
+/* 封面 */
+.cover{align-items:flex-start;justify-content:center}
+.cover .kicker{font-size:19px;color:var(--brass);font-weight:700;letter-spacing:.34em;margin-bottom:26px}
+.cover h1{font-size:66px;line-height:1.4;color:var(--ink);letter-spacing:.01em}
+.cover h1 em{font-style:normal;color:var(--green-deep);border-bottom:6px solid var(--brass-soft)}
+.cover .sub{font-size:22px;line-height:1.9;color:#4c4739;margin-top:30px}
+.cover .tags{display:flex;gap:12px;margin-top:34px;flex-wrap:wrap}
+.cover .tags span{font-size:15.5px;color:var(--green-deep);background:var(--green-soft);border:1px solid var(--green-line);border-radius:999px;padding:7px 18px;letter-spacing:.05em}
+/* 目录条 */
+.flowbar{display:flex;align-items:center;gap:8px;margin-top:30px;flex-wrap:wrap}
+.flowbar span{font-size:13.5px;color:var(--green-deep);background:var(--card);border:1px solid var(--green-line);border-radius:999px;padding:5px 13px}
+.flowbar i{font-style:normal;color:var(--brass);font-size:13px}
+/* 结尾页 */
+.egg{display:flex;gap:16px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:14px}
+.egg .em{font-size:24px;flex:none}
+.egg .tx{font-size:18px;line-height:1.7;color:#4c4739}
+.egg .tx b{color:var(--green-deep)}
+.cta{margin-top:26px;background:var(--green-deep);color:#FBF9F2;border-radius:14px;padding:24px 26px;font-size:20px;line-height:1.8}
+.cta b{color:#F5EAD3}
+</style>
+</head>
+<body>
+
+<div class="guide">
+  <h1>碎碎念弹药库 · 操作流程图文（共 9 页）</h1>
+  <p>每张卡片是标准 <b>3:4（810×1080）</b>，小红书图文直接可用。逐张<b>对准浅色卡片区域截图</b>即可（上方灰色标签和说明不用截）。虚线框是<b>产品界面截图位</b>：先去产品里把对应界面截好，替换掉虚线框再导出，或者发布时直接拼在卡片后面。</p>
+</div>
+
+<!-- ================= 第 1 页 · 封面 ================= -->
+<div class="plabel">第 <b>1</b> 页 · 封面</div>
+<div class="page cover">
+  <div class="tape"></div>
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">01 / 09</span></div>
+  <div class="kicker">普通人的口播起步工具</div>
+  <h1 class="serif">备忘录里存了 <em>100 条</em>碎碎念，一条都没发出去？</h1>
+  <p class="sub">不用会剪辑、不用有网感，一部手机 + 把话说出来，就是成本最低的自媒体起步方式。<br>我们帮你把「想说」变成「能讲」。</p>
+  <div class="tags">
+    <span>3 分钟走完全流程</span><span>AI 只理顺 · 不代写</span><span>数据只存你的浏览器</span>
+  </div>
+  <div class="shot"><span class="cam">📷</span><p>封面主图：产品首屏或口喷界面截图</p><small>建议截「对着骨架口喷」那屏，最有产品感</small></div>
+  <div class="pf"><span>图文版操作流程</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 2 页 · 第一步 ================= -->
+<div class="plabel">第 <b>2</b> 页 · 第一步：丢素材</div>
+<div class="page">
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">02 / 09</span></div>
+  <div class="stepbadge"><span class="no">1</span><span class="lab">素材系统 · 大家想听的话题</span></div>
+  <h2 class="title serif">第一步：把碎碎念<em>丢进来</em></h2>
+  <p class="lead">日志框写长感想，灵感便签存一句话，<b>想到哪写到哪，不用写成文章</b>。这一步你只需要「舍不得删的那些话」。</p>
+  <div class="pt"><span class="ic">✎</span><p class="tx"><b>可选：填一张定位卡 + 风格卡</b>——你的口头禅、禁用的词。之后 AI 写的每句话都会照你的语气来。</p></div>
+  <div class="pt"><span class="ic">✿</span><p class="tx"><b>人类图？完全可选。</b>不填、不信都不影响使用，AI 分析只以你写的内容为主。</p></div>
+  <div class="shot"><span class="cam">📷</span><p>截图：第 1 步「丢碎碎念」界面</p><small>截一张带灵感便签 + 日志框的画面，最好已经填了两三条真实内容</small></div>
+  <div class="pf"><span>所有数据只存在你自己的浏览器里</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 3 页 · 第二步 ================= -->
+<div class="plabel">第 <b>3</b> 页 · 第二步：AI 挑选题</div>
+<div class="page">
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">03 / 09</span></div>
+  <div class="stepbadge"><span class="no">2</span><span class="lab">素材系统 · 挑选题</span></div>
+  <h2 class="title serif">第二步：让 AI 从里面<em>挖出 3 个选题</em></h2>
+  <p class="lead">AI 读完你的碎碎念，给你 3 个值得写的观点，每个都带<b>打分、目标人群、话题标签</b>，还有最关键的——</p>
+  <div class="pt"><span class="ic">🔍</span><p class="tx"><b>每个选题附 3-5 个搜索词</b>。先别急着定，下一页用它们做一件事。</p></div>
+  <div class="slip"><b>为什么不是 30 个？</b>这个产品不搞「AI 一键生成一百条」，只从你真实写过的话里挑 3 个最值得讲的——少，才做得过来。</div>
+  <div class="shot"><span class="cam">📷</span><p>截图：3 张选题卡（带分数和搜索词）</p><small>把「搜索词」那行截进来，和下一页衔接</small></div>
+  <div class="pf"><span>打分维度：痛点强度 / 受众广度 / 个人独特性 / 账号匹配度 / 可执行价值</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 4 页 · 卡点① ================= -->
+<div class="plabel">第 <b>4</b> 页 · 卡点①：手动验证（30 秒）</div>
+<div class="page">
+  <div class="corner">⏱ 只花 30 秒</div>
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">04 / 09</span></div>
+  <div class="stepbadge"><span class="no">✓</span><span class="lab">关键一步 · 选题验证</span></div>
+  <h2 class="title serif">这个选题行不行，<em>你自己搜一下</em></h2>
+  <p class="lead">复制上一步的搜索词，去小红书搜一下：<b>近一两个月有没有同类爆款？</b>有，说明大家真的想看；没有，换一个候选再来。</p>
+  <div class="pt"><span class="ic">✋</span><p class="tx"><b>这一步是故意不自动化的。</b>AI 猜选题会猜错，你自己花 30 秒搜出来的判断，比它准得多。</p></div>
+  <div class="pt"><span class="ic">🛡</span><p class="tx"><b>这一步也在保护你</b>：不追根本没有观众的选题，不把时间浪费在自嗨上。</p></div>
+  <div class="shot"><span class="cam">📷</span><p>截图：搜索词栏 + 小红书搜索结果对照</p><small>左边产品搜索词、右边小红书搜索页，拼一张对照图</small></div>
+  <div class="pf"><span>验证通过 → 点「就用这个」进入下一步</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 5 页 · 第三步 ================= -->
+<div class="plabel">第 <b>5</b> 页 · 第三步：裂变痛点 + 选骨架</div>
+<div class="page">
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">05 / 09</span></div>
+  <div class="stepbadge"><span class="no">3</span><span class="lab">选题系统 · 定锚</span></div>
+  <h2 class="title serif">第三步：一个大痛点，<em>拆成 9 个小问题</em></h2>
+  <p class="lead">你选定的选题是一个大痛点，AI 把它裂变成 8-9 个观众真正关心的小问题。你只挑 <b>1 个核心 + 2 个辅助</b>——一条视频只讲透一件事。</p>
+  <div class="pt"><span class="ic">🦴</span><p class="tx"><b>再选一个内容骨架</b>（6 选 1）：个人经历式、普遍困惑式、反常识式……不知道选哪个？每个都有「适合谁」的说明。</p></div>
+  <div class="slip"><b>没被选中的小痛点不会浪费</b>——它们都在那留着，每一条都能变成你系列内容的下一期。</div>
+  <div class="shot"><span class="cam">📷</span><p>截图：痛点列表（标好核心/辅助）+ 骨架选择</p><small>两张小图上下拼：上痛点、下骨架</small></div>
+  <div class="pf"><span>一个核心 + 两个辅助 + 一个骨架，选题就定锚了</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 6 页 · 第四步 ================= -->
+<div class="plabel">第 <b>6</b> 页 · 第四步：口喷</div>
+<div class="page">
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">06 / 09</span></div>
+  <div class="stepbadge"><span class="no">4</span><span class="lab">内容系统 · 爱听的方式</span></div>
+  <h2 class="title serif">第四步：对着框架，<em>把话喷出来</em></h2>
+  <p class="lead">AI 先给你一张<b>主线卡</b>：这条只想证明什么、讲给谁听、3 个开头方向、3 个结尾方向。然后你照着框架分段说——</p>
+  <div class="pt"><span class="ic">🎤</span><p class="tx"><b>不用打字</b>：点开输入法自带的语音输入，对着手机说就行。卡壳、口语、说反了都没关系。</p></div>
+  <div class="pt"><span class="ic">💸</span><p class="tx"><b>觉得框架限制发挥？</b>一键切换成空白大框，想到哪说到哪。</p></div>
+  <div class="slip"><b>这一步的原则：宁多勿少。</b>说得越乱、越真实，最后成稿越像你自己。AI 负责整理，你负责真实。</div>
+  <div class="shot"><span class="cam">📷</span><p>截图：主线卡 + 按框架分段的口喷框</p><small>最好截一版已经填了真实口喷内容的，观感完全不同</small></div>
+  <div class="pf"><span>口喷完成 → 点「先定主线，再出口播工作稿」</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 7 页 · 第五步 ================= -->
+<div class="plabel">第 <b>7</b> 页 · 第五步：改稿（核心功能）</div>
+<div class="page">
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">07 / 09</span></div>
+  <div class="stepbadge"><span class="no">5</span><span class="lab">内容系统 · 终稿权在你</span></div>
+  <h2 class="title serif">第五步：AI 只理顺，<em>稿子还是你的</em></h2>
+  <p class="lead">出来的是一版<b>口播工作稿</b>：AI 只做整理和排序，不编故事、不造金句、不写成营销腔。你照着念就能录。</p>
+  <div class="pt"><span class="ic">✎</span><p class="tx"><b>每一段都能直接改</b>，改了实时生效，就是你的终稿。</p></div>
+  <div class="pt"><span class="ic">❝</span><p class="tx"><b>最爽的功能</b>：选中段里某几个字，点「引用选中词句」，告诉 AI 怎么改——<b>它只改你选的那几句，别的一个字不动</b>。</p></div>
+  <div class="pt"><span class="ic">⤴</span><p class="tx">改到一半有事？<b>存档</b>，回头从存档处一键回到这一步继续。</p></div>
+  <div class="shot"><span class="cam">📷</span><p>截图：草稿分段 + 右侧「引用选中词句」修改框</p><small>全产品最惊艳的画面，放大截：能看到引用的那句话被单独改写</small></div>
+  <div class="pf"><span>写好终稿 → 复制 → 打开手机录口播</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 8 页 · 卡点② ================= -->
+<div class="plabel">第 <b>8</b> 页 · 卡点②：接入 AI（仅一次）</div>
+<div class="page">
+  <div class="corner">🔑 一次设置 · 永久生效</div>
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">08 / 09</span></div>
+  <div class="stepbadge"><span class="no">⚙</span><span class="lab">设置 · 接入你的 AI</span></div>
+  <h2 class="title serif">想用真的 AI？<em>三步，一分钟</em></h2>
+  <p class="lead">不接也能玩（自带演示数据），但接了才是真的「你的 AI」。右上角设置 → 三步：</p>
+  <div class="pt"><span class="ic">1</span><p class="tx"><b>选服务商</b>——智谱 / DeepSeek / Kimi / 千问 / 豆包…… 会直接给你<b>官方网址</b>，点过去就行。</p></div>
+  <div class="pt"><span class="ic">2</span><p class="tx"><b>注册领 Key</b>——推荐智谱 GLM：glm-4-flash <b>免费</b>；大部分平台新用户都送额度。</p></div>
+  <div class="pt"><span class="ic">3</span><p class="tx"><b>粘贴回来</b>——Key 只存在你浏览器里，我们服务器碰不到。</p></div>
+  <div class="slip"><b>为什么这样设计？</b>不搭后台、不留你的数据——「数据只在本地」不是口号，是架构本身。</div>
+  <div class="shot half"><span class="cam">📷</span><p>截图：设置弹窗（选服务商 + 官网链接 + Key 输入框）</p><small>Key 打码或填一半</small></div>
+  <div class="pf"><span>支持 7 家 OpenAI 兼容服务商，可随时换</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+<!-- ================= 第 9 页 · 彩蛋收尾 ================= -->
+<div class="plabel">第 <b>9</b> 页 · 隐藏玩法 + 收尾</div>
+<div class="page">
+  <div class="ph"><span class="brand">碎碎念弹药库</span><span class="num">09 / 09</span></div>
+  <div class="stepbadge"><span class="no">★</span><span class="lab">老玩家的玩法</span></div>
+  <h2 class="title serif">走完全程了？<em>这些地方再逛逛</em></h2>
+  <div class="egg"><span class="em">📦</span><p class="tx"><b>存档</b>——任何一步都能存档，回头一键回到当时的进度，一篇稿子慢慢磨。</p></div>
+  <div class="egg"><span class="em">🔥</span><p class="tx"><b>爆款拆解</b>——刷到好笔记贴进来，AI 拆它的钩子和结构，只学结构、不抄人家的句子。</p></div>
+  <div class="egg"><span class="em">📒</span><p class="tx"><b>经验库</b>——用着用着，你会攒下自己的选题库和写作纪律，越用越懂你。</p></div>
+  <div class="egg"><span class="em">🔒</span><p class="tx"><b>隐私</b>——没有账号、没有后台，你的碎碎念只活在你的浏览器里。</p></div>
+  <div class="cta">📱 一部手机 + 一份你的碎碎念，就能开始你的第一条口播。<br><b>评论区留一句你最近没发出去的碎碎念</b>，我帮你看哪句值得写成一条视频。</div>
+  <div class="pf"><span>内测中 · 欢迎来当第一批用户</span><span class="url">purplecabbage-gc.github.io/suisuinian-ammo</span></div>
+</div>
+
+</body>
+</html>
