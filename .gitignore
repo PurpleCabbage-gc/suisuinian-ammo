@@ -1,1 +1,10 @@
+# 本地营销/截图素材，暂不传仓库
 guide.html
+intro.html
+碎碎念弹药库-产品介绍.png
+screenshot.js
+
+# npm 临时产物
+node_modules/
+package.json
+package-lock.json
